@@ -1,7 +1,6 @@
+// src/context/CartProvider.jsx
+import React, { useState, useMemo } from "react";
 import { CartContext } from "./CartContext";
-import React, {  useState, useMemo } from "react";
-
-
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);

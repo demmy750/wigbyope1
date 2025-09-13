@@ -1,10 +1,11 @@
+// backend/routes/orderRoutes.js
 const express = require("express");
 const router = express.Router();
 const Order = require("../models/Order");
 const Cart = require("../models/Cart");
 const { protect, admin } = require("../middleware/auth");
 
-// ✅ POST /api/orders - Place an order from cart
+// POST /api/orders - Place an order from cart
 router.post("/", protect, async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user._id }).populate("items.product");
@@ -32,7 +33,7 @@ router.post("/", protect, async (req, res) => {
 
     await order.save();
 
-    // Clear cart
+    // Clear cart after order placement
     cart.items = [];
     await cart.save();
 
@@ -42,7 +43,7 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
-// ✅ GET /api/orders - Get all orders of logged-in user
+// GET /api/orders - Get all orders of logged-in user
 router.get("/", protect, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
@@ -52,14 +53,14 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// ✅ GET /api/orders/:id - Get a single order by ID
+// GET /api/orders/:id - Get a single order by ID
 router.get("/:id", protect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate("items.product", "name price");
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // Ensure user can only view their order (unless admin)
-    if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    // Allow access if user owns order or is admin
+    if (order.user.toString() !== req.user._id.toString() && req.user.role !== "admin") {
       return res.status(401).json({ message: "Not authorized" });
     }
 
@@ -69,7 +70,7 @@ router.get("/:id", protect, async (req, res) => {
   }
 });
 
-// ✅ PUT /api/orders/:id/pay - Update order payment status
+// PUT /api/orders/:id/pay - Update order payment status
 router.put("/:id/pay", protect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -91,7 +92,7 @@ router.put("/:id/pay", protect, async (req, res) => {
   }
 });
 
-// ✅ PUT /api/orders/:id/status - Update order status (admin only)
+// PUT /api/orders/:id/status - Update order status (admin only)
 router.put("/:id/status", protect, admin, async (req, res) => {
   try {
     const { status } = req.body;

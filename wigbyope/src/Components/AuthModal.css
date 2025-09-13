@@ -1,0 +1,140 @@
+/* Modal Overlay */
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Modal Content */
+.auth-modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Close Button */
+.auth-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: #444;
+  cursor: pointer;
+}
+
+/* Modal Title */
+.auth-title {
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #d63384;
+}
+
+/* Footer */
+.auth-footer {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.auth-link {
+  color: #c0392b;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Form fields inside modal */
+.auth-modal-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-modal-content label {
+  margin-top: 0.8rem;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.auth-modal-content input {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.auth-modal-content button[type="submit"] {
+  margin-top: 1rem;
+  background: #d63384;
+  color: white;
+  padding: 0.7rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.auth-modal-content button[type="submit"]:disabled {
+  background: #999;
+  cursor: not-allowed;
+}
+/* Make modal content scrollable on small screens */
+.auth-modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Focus outline for accessibility */
+.auth-modal-close:focus,
+.auth-link:focus {
+  outline: 2px solid #c0392b;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Cursor pointer for close button */
+.auth-modal-close {
+  cursor: pointer;
+}
+
+/* Make auth-link keyboard accessible */
+.auth-link {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Add smooth transition for switching views */
+.auth-modal-body > * {
+  transition: opacity 0.3s ease;
+}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useContext } from "react";
 import "./ShopPage.css";
-import allProducts from "../data/allProducts";
+import useProducts from "../data/allProducts"; // ✅ import the hook
 import { CartContext } from "../context/CartContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,6 +31,9 @@ const StarRating = ({ rating }) => {
 
 export default function ShopPage() {
   const { addToCart } = useContext(CartContext);
+
+  // ✅ load products from hook
+  const { products: allProducts, loading, error } = useProducts();
 
   const [search, setSearch] = useState("");
   const [selectedTypes, setSelectedTypes] = useState(new Set());
@@ -68,7 +71,7 @@ export default function ShopPage() {
       }
       return true;
     });
-  }, [search, selectedTypes, selectedColors, selectedLengths]);
+  }, [allProducts, search, selectedTypes, selectedColors, selectedLengths]);
 
   const paginatedProducts = filteredProducts.slice(0, page * PRODUCTS_PER_PAGE);
 
@@ -95,6 +98,10 @@ export default function ShopPage() {
     ? allProducts.filter((p) => detailProduct.relatedIds.includes(p.id))
     : [];
 
+  // ✅ Handle loading & error states
+  if (loading) return <p>Loading products...</p>;
+  if (error) return <p>Error loading products: {error}</p>;
+
   return (
     <>
       <header className="shop-header" role="banner">
@@ -102,8 +109,8 @@ export default function ShopPage() {
         <p>Explore our curated collection of luxurious wigs tailored to your style.</p>
       </header>
 
+      {/* 🔎 Filters */}
       <section className="filters" aria-label="Product filters">
-        {/* Filters */}
         <div className="filter-group">
           <h3>Type</h3>
           <div className="filter-options">
@@ -163,6 +170,7 @@ export default function ShopPage() {
         </div>
       </section>
 
+      {/* 🛒 Product Grid */}
       <section className="product-grid" aria-live="polite" aria-label="Product listings">
         {paginatedProducts.length === 0 && (
           <p className="no-results" role="alert">
@@ -212,6 +220,7 @@ export default function ShopPage() {
         ))}
       </section>
 
+      {/* Load More */}
       {paginatedProducts.length < filteredProducts.length && (
         <div className="load-more-wrapper">
           <button className="btn-secondary" onClick={loadMore} aria-label="Load more products">
@@ -220,6 +229,7 @@ export default function ShopPage() {
         </div>
       )}
 
+      {/* 🔍 Product Modal */}
       {detailProduct && (
         <div
           className="modal-overlay"
@@ -230,11 +240,7 @@ export default function ShopPage() {
           onClick={() => setDetailProduct(null)}
           tabIndex={-1}
         >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-            tabIndex={0}
-          >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} tabIndex={0}>
             <button
               className="modal-close"
               aria-label="Close product details"
@@ -244,11 +250,7 @@ export default function ShopPage() {
             </button>
 
             <div className="gallery">
-              <button
-                className="gallery-nav prev"
-                aria-label="Previous image"
-                onClick={prevImage}
-              >
+              <button className="gallery-nav prev" aria-label="Previous image" onClick={prevImage}>
                 ‹
               </button>
               <img
@@ -256,11 +258,7 @@ export default function ShopPage() {
                 alt={`${detailProduct.name} image ${galleryIndex + 1}`}
                 loading="lazy"
               />
-              <button
-                className="gallery-nav next"
-                aria-label="Next image"
-                onClick={nextImage}
-              >
+              <button className="gallery-nav next" aria-label="Next image" onClick={nextImage}>
                 ›
               </button>
             </div>
@@ -273,7 +271,6 @@ export default function ShopPage() {
             </p>
 
             <div className="detail-actions">
-              {/* ✅ Close modal after adding to cart */}
               <button
                 className="btn-primary"
                 onClick={() => {
@@ -281,19 +278,15 @@ export default function ShopPage() {
                   toast.success(`Added "${detailProduct.name}" to cart!`);
                   setDetailProduct(null); // close modal
                 }}
-                aria-label={`Add ${detailProduct.name} to cart`}
               >
                 Add to Cart
               </button>
-
-              {/* ✅ Close modal after buy now */}
               <button
                 className="btn-secondary"
                 onClick={() => {
                   toast.info(`Proceeding to buy "${detailProduct.name}"`);
-                  setDetailProduct(null); // close modal
+                  setDetailProduct(null);
                 }}
-                aria-label={`Buy ${detailProduct.name} now`}
               >
                 Buy Now
               </button>
@@ -346,6 +339,9 @@ export default function ShopPage() {
           </div>
         </div>
       )}
+
+      {/* Toasts */}
+      <ToastContainer />
     </>
   );
 }

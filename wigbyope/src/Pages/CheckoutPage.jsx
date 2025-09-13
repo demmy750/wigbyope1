@@ -1,4 +1,3 @@
-// src/pages/CheckoutPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
@@ -16,6 +15,7 @@ const CheckoutForm = ({ orderSummary, billingInfo, shippingInfo, paymentMethod, 
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -50,7 +50,7 @@ const CheckoutForm = ({ orderSummary, billingInfo, shippingInfo, paymentMethod, 
 
       if (error) {
         setError(error.message);
-        return;
+        return false;
       }
 
       if (paymentIntent.status === "succeeded") {
@@ -63,25 +63,29 @@ const CheckoutForm = ({ orderSummary, billingInfo, shippingInfo, paymentMethod, 
           transactionId: paymentIntent.id,
         });
         navigate("/confirmation");
+        return true;
       }
     } catch (err) {
       setError("Payment failed. Try again.");
+      return false;
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
     if (paymentMethod === "stripe") {
       if (!stripe || !elements) return;
       setIsSubmitting(true);
-      await handleStripePayment();
-      setIsSubmitting(false);
+      const success = await handleStripePayment();
+      if (!success) setIsSubmitting(false);
+      // If success, navigation happens inside handleStripePayment
     } else if (paymentMethod === "paystack") {
-      // 🔹 Placeholder for Paystack integration
       alert("Redirecting to Paystack (Nigeria only)");
       // TODO: Integrate Paystack SDK here
     } else {
-      alert("Unsupported payment method.");
+      setError("Unsupported payment method.");
     }
   };
 
@@ -131,7 +135,7 @@ const CheckoutPage = ({ placeOrder }) => {
     ],
   };
 
-  // 🔹 Auto-select payment method based on country
+  // Auto-select payment method based on country
   useEffect(() => {
     if (shippingInfo.country === "NG") {
       setPaymentMethod("paystack");

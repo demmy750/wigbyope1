@@ -13,7 +13,7 @@
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 /* Logo */
@@ -58,9 +58,15 @@
 .navbar-links a:hover::after {
   width: 100%;
 }
+.navbar-actions{
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
 
 /* Buttons */
-.btn-outline {
+
+/* .btn-outline {
   border: 1px solid #d63384;
   color: #d63384;
   padding: 0.5rem 1rem;
@@ -72,20 +78,22 @@
 .btn-outline:hover {
   background: #d63384;
   color: #fff;
-}
+} */
 
-.btn-gradient {
+.btn-gradientt {
   background: linear-gradient(45deg, #d63384, #9c27b0);
   color: #fff;
-  padding: 0.5rem 1rem;
-  border-radius: 25px;
-  border: none;
+  padding: 0.8rem 1.3rem;
+  border-radius: 30px;
+  border: none; 
   transition: 0.3s;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
 }
-.btn-gradient:hover {
+.btn-gradientt:hover {
   opacity: 0.9;
+  background: #d63384;
+  color: #fff;
 }
 
 /* Icons */
@@ -93,7 +101,7 @@
   background: none;
   border: none;
   font-size: 1.2rem;
-  margin-right: 1rem;
+  /* margin-right: 1rem; */
   color: #444;
   cursor: pointer;
   transition: color 0.3s;
@@ -108,13 +116,13 @@
 }
 .cart-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  /* top: -8px;
+  right: -8px; */
   background: #d63384;
   color: #fff;
   font-size: 0.7rem;
   border-radius: 50%;
-  padding: 2px 6px;
+  /* padding: 2px 6px; */
 }
 
 /* Mobile */

@@ -1,79 +1,77 @@
+// backend/server.js
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const path = require("path");
 const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-const mongoSanitize = require("express-mongo-sanitize");
-const xss = require("xss-clean");
+const dotenv = require("dotenv");
 const morgan = require("morgan");
+const mongoSanitize = require("express-mongo-sanitize");
+const path = require("path");
+const connectDB = require("./config/db");
 
+// Load env variables
 dotenv.config();
 
+// Initialize app
 const app = express();
 
-// Logging (for dev/debug)
-if (process.env.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
+// ✅ Security Middlewares
+app.use(helmet()); // secure headers
+app.use(cors({ origin: "http://localhost:5173", credentials: true })); // allow frontend
+app.use(express.json()); // parse JSON requests
+app.use(morgan("dev")); // logging
+
+// ✅ Custom middleware to sanitize req.body and req.params only (avoid req.query sanitization)
+app.use((req, res, next) => {
+  if (req.body) {
+    req.body = mongoSanitize.sanitize(req.body, { replaceWith: "_" });
+  }
+  if (req.params) {
+    req.params = mongoSanitize.sanitize(req.params, { replaceWith: "_" });
+  }
+  // Do NOT sanitize req.query to avoid the error
+  next();
+});
+
+// ✅ Custom sanitize for body (extra safety)
+function sanitizeObject(obj) {
+  if (!obj || typeof obj !== "object") return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeObject);
+  const out = {};
+  for (const key of Object.keys(obj)) {
+    if (key.startsWith("$") || key.includes(".")) {
+      continue; // skip dangerous key
+    }
+    out[key] = sanitizeObject(obj[key]);
+  }
+  return out;
 }
 
-// Security middlewares
-app.use(helmet()); // Set security headers
-app.use(mongoSanitize()); // Prevent NoSQL injection
-app.use(xss()); // Prevent XSS attacks
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per window
-  message: "Too many requests from this IP, please try again later",
-});
-app.use(limiter);
-
-app.use(cors());
-app.use(express.json());
-
-// Serve uploaded images statically
-app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-
-// Import routes
-const userRoutes = require("./routes/userRoutes");
-const authRoutes = require("./routes/auth");
-const productRoutes = require("./routes/productRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const cartRoutes = require("./routes/cartRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-
-// Use routes
-app.use("/api/users", userRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes);
-
-// Handle 404 (not found)
 app.use((req, res, next) => {
-  res.status(404).json({ message: "Route not found" });
+  if (req.body) req.body = sanitizeObject(req.body);
+  next();
 });
 
-// Error handler middleware
-app.use((err, req, res, next) => {
-  console.error("Error 💥:", err.stack);
-  res.status(err.statusCode || 500).json({
-    message: err.message || "Server Error",
-  });
+// ✅ Connect Database
+connectDB();
+
+// ✅ Static folder for uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ✅ Routes
+app.use("/api/auth", require("./routes/auth"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/products", require("./routes/productRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/blogs", require("./routes/blogRoutes"));
+app.use("/api/upload", require("./routes/uploadRoutes")); // admin-only uploads
+
+// ✅ Test Route
+app.get("/", (req, res) => {
+  res.send("API is running...");
 });
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1); // Exit process if DB connection fails
-  });
-
+// ✅ Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

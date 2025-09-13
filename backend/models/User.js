@@ -23,6 +23,13 @@ const userSchema = new mongoose.Schema({
     enum: ['customer', 'admin'],
     default: 'customer',
   },
+   isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationCode: String,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
 }, { timestamps: true });
 
 // Hash password before saving (create or update)
@@ -32,5 +39,7 @@ userSchema.pre('save', async function(next) {
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
+
+
 
 module.exports = mongoose.model('User', userSchema);

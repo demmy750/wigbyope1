@@ -31,7 +31,7 @@
 //       )
 //     );
 //   };
-
+ 
 //   const handleRemove = (id) => {
 //     setCartItems((items) => items.filter((item) => item.id !== id));
 //   };
@@ -111,3 +111,4 @@
 //     </main>
 //   );
 // }
+//

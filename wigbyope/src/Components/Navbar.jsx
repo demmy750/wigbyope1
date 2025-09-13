@@ -1,16 +1,42 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { CartContext } from "../context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import AuthModal from "./AuthModal";
 import "./Navbar.css";
 
 function Navbar({ onCartToggle }) {
   const { cartItems } = useContext(CartContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModal, setAuthModal] = useState({ open: false, view: "register" });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  {showForgotPassword && <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />}
 
-  function toggleMobileMenu() {
-    setMobileMenuOpen((open) => !open);
+  const navigate = useNavigate();
+
+  // Check login status on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  function openAuth(view) {
+    setAuthModal({ open: true, view });
+    setMobileMenuOpen(false);
   }
 
+  function closeAuth() {
+    setAuthModal({ open: false, view: "register" });
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setMobileMenuOpen(false);
+    navigate("/");
+  }
+
+  // Close mobile menu on navigation
   function handleLinkClick() {
     setMobileMenuOpen(false);
   }
@@ -20,98 +46,85 @@ function Navbar({ onCartToggle }) {
       <nav className="navbar">
         <div className="navbar-container">
           {/* Logo */}
-          <div className="navbar-logo">
-            <Link to="/" onClick={handleLinkClick} style={{ textDecoration: "none", color: "inherit" }}>
-              WIG<span>BYOPE</span>
-            </Link>
-          </div>
-
-          {/* Desktop Menu */}
+           <div className="navbar-logo">
+             WIG<span>BYOPE</span>
+           </div>
           <ul className="navbar-links">
-            {[
-              { name: "Home", path: "/" },
-              { name: "Services", path: "/services" },
-              { name: "Shop", path: "/shop" },
-              { name: "Training", path: "/training" },
-              { name: "About", path: "/about" },
-              { name: "Blog", path: "/blog" },
-              { name: "Contact", path: "/contact" },
-            ].map(({ name, path }) => (
-              <li key={name}>
-                <Link to={path} className="nav-link" onClick={handleLinkClick}>
-                  {name}
-                </Link>
-              </li>
-            ))}
+            <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+            <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+            <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+            <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+            <li><Link to="/blog" onClick={handleLinkClick}>Blog</Link></li>
+            <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+            {/* <li><Link to="/coo" onClick={handleLinkClick}>Coo</Link></li> */}
           </ul>
 
-          {/* Icons + Buttons */}
           <div className="navbar-actions">
-            <button
-              onClick={() => alert("Search feature coming soon!")}
-              className="icon-btn"
-              aria-label="Open search"
-            >
+            {/* <button onClick={() => alert("Search feature coming soon!")} className="icon-btn" aria-label="Search">
               <i className="fas fa-search"></i>
-            </button>
+            </button> */}
 
-            <button
-              onClick={onCartToggle}
-              className="icon-btn cart-btn"
-              aria-label="Open cart"
-            >
+            <button onClick={onCartToggle} className="icon-btn cart-btn" aria-label="Cart">
               <i className="fas fa-shopping-bag"></i>
               {cartItems.length > 0 && (
-                <span className="cart-badge">{cartItems.length}</span>
+                <span className="cart-badge" aria-live="polite">{cartItems.length}</span>
               )}
             </button>
 
-            <button className="btn-outline">Sign In</button>
-            <button className="btn-gradient">Sign Up</button>
+            {isLoggedIn ? (
+              <button className="btn-outline" onClick={handleLogout}>Logout</button>
+            ) : (
+              <>
+                {/* <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button> */}
+                <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+              </>
+            )}
 
-            {/* Mobile Toggle */}
             <button
-              onClick={toggleMobileMenu}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="mobile-menu-btn"
-              aria-label="Toggle menu"
+              aria-label="Toggle mobile menu"
+              aria-expanded={mobileMenuOpen}
             >
               <i className="fas fa-bars"></i>
             </button>
           </div>
         </div>
 
-        {/* Mobile Sidebar */}
         <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
-          <button
-            className="close-btn"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="Close menu"
-          >
-            &times;
-          </button>
           <ul>
-            {[
-              { name: "Home", path: "/" },
-              { name: "Services", path: "/services" },
-              { name: "Shop", path: "/shop" },
-              { name: "Training", path: "/training" },
-              { name: "About", path: "/about" },
-              { name: "Blog", path: "/blog" },
-              { name: "Contact", path: "/contact" },
-            ].map(({ name, path }) => (
-              <li key={name}>
-                <Link to={path} onClick={handleLinkClick}>
-                  {name}
-                </Link>
-              </li>
-            ))}
-            <li className="mobile-actions">
-              <button className="btn-outline">Sign In</button>
-              <button className="btn-gradient">Sign Up</button>
-            </li>
+            <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+            <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+            <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+            <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+            <li><Link to="/blog" onClick={handleLinkClick}>Blog</Link></li>
+            <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+            {/* <li><Link to="/coo" onClick={handleLinkClick}>Coo</Link></li> */}
           </ul>
+
+          <li className="mobile-actions">
+            {isLoggedIn ? (
+              <button className="btn-gradient" onClick={handleLogout}>Logout</button>
+            ) : (
+              <>
+                <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button>
+                <button className="btn-gradient" onClick={() => openAuth("register")}>Sign Up</button>
+              </>
+            )}
+          </li>
         </div>
       </nav>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModal.open}
+        view={authModal.view}
+        onClose={closeAuth}
+        onLoginSuccess={() => {
+          setIsLoggedIn(true);
+          closeAuth();
+        }}
+      />
     </>
   );
 }

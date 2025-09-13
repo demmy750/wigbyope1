@@ -1,0 +1,40 @@
+/* AdminDashboard.css */
+main {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #4a148c;
+}
+
+h1, h2, h3 {
+  color: #7b1fa2;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+th {
+  background-color: #d1c4e9;
+  color: #311b92;
+}
+
+tr:nth-child(even) {
+  background-color: #f3e5f5;
+}
+
+section {
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 600px) {
+  main {
+    padding: 0 1rem;
+  }
+}
