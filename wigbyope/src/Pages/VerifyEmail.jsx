@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { authAPI } from "../api";
+import { useNavigate } from "react-router-dom";
 
 export default function VerifyEmail() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -15,6 +17,9 @@ export default function VerifyEmail() {
     try {
       const res = await authAPI.verifyEmail(email, code);
       setMessage(res.message || "Email verified successfully!");
+
+      // ✅ Auto-redirect to login after 2 seconds
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setMessage(err.message);
     } finally {

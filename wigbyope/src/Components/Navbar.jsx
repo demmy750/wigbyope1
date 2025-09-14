@@ -107,7 +107,7 @@ function Navbar({ onCartToggle }) {
               <button className="btn-gradient" onClick={handleLogout}>Logout</button>
             ) : (
               <>
-                <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button>
+                {/* <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button> */}
                 <button className="btn-gradient" onClick={() => openAuth("register")}>Sign Up</button>
               </>
             )}

@@ -410,9 +410,10 @@ import OrderTracking from "./Pages/OrderTracking";
 // Import your auth pages (replace with your actual components or the forms I gave)
 import Login from "./Pages/LoginForm";
 import Register from "./Pages/RegisterForm";
-import VerifyEmail from "./Pages/VerifyEmailForm";
+import VerifyEmail from "./Pages/VerifyEmail";
 import ForgotPassword from "./Pages/ForgotPasswordForm";
 import ResetPassword from "./Pages/ResetPasswordForm";
+
 
 import AdminDashboard from "./admin/AdminDashboard";
 import PrivateRoute from "./components/PrivateRoute";
@@ -458,9 +459,9 @@ function App() {
               <Route
                 path="/admin"
                 element={
-                  <PrivateRoute adminOnly={true}>
+                  // <PrivateRoute adminOnly={true}>
                     <AdminPanel />
-                  </PrivateRoute>
+                  // </PrivateRoute>
                 }
               />
 

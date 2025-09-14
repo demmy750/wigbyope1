@@ -1,3 +1,4 @@
+// routes/auth.js
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -6,35 +7,45 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 
-// Setup nodemailer transporter (using Gmail SMTP here)
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // from backend .env
-    pass: process.env.EMAIL_PASS,
-  },
-});
+let transporter = null;
+
+// Ensure transporter exists (Ethereal test account) - lazy init
+async function ensureTransporter() {
+  if (transporter) return transporter;
+
+  const testAccount = await nodemailer.createTestAccount();
+  transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+
+  console.log('🧪 Ethereal test account created (preview emails):');
+  console.log('   user:', testAccount.user);
+  console.log('   pass:', testAccount.pass);
+  return transporter;
+}
 
 // @route   POST /api/auth/register
-// @desc    Register new user and send verification code
-// @access  Public
 router.post('/register', async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
     let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'User  already exists' });
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    if (user) return res.status(400).json({ message: 'User already exists' });
 
     // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // IMPORTANT: Do NOT hash here — your User schema pre('save') will hash it.
     user = new User({
       name,
       email,
-      password: hashedPassword,
+      password, // plain here; will be hashed by schema pre('save')
       role: role || 'customer',
       verificationCode,
       isVerified: false,
@@ -42,32 +53,38 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
+    // Ensure transporter is ready
+    await ensureTransporter();
+
     // Send verification email
     const mailOptions = {
-      from: `"Your App" <${process.env.EMAIL_USER}>`,
+      from: `"Your App" <no-reply@example.com>`,
       to: email,
       subject: 'Verify your email',
       text: `Your verification code is: ${verificationCode}`,
+      html: `<p>Your verification code is: <b>${verificationCode}</b></p>`
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
 
-    res.status(201).json({ message: 'Registered successfully. Please verify your email.' });
+    // Log preview URL so you can open it in browser (Ethereal)
+    console.log('📧 Verification email sent. Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    console.log('🔢 Verification code for', email, ':', verificationCode);
+
+    return res.status(201).json({ message: 'Registered successfully. Please verify your email.' });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server error');
+    console.error('Register error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
 // @route   POST /api/auth/verify-email
-// @desc    Verify email with code
-// @access  Public
 router.post('/verify-email', async (req, res) => {
   const { email, code } = req.body;
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'User  not found' });
+    if (!user) return res.status(400).json({ message: 'User not found' });
     if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
     if (user.verificationCode !== code) return res.status(400).json({ message: 'Invalid verification code' });
 
@@ -75,16 +92,14 @@ router.post('/verify-email', async (req, res) => {
     user.verificationCode = null;
     await user.save();
 
-    res.json({ message: 'Email verified successfully' });
+    return res.json({ message: 'Email verified successfully' });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server error');
+    console.error('Verify error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
 // @route   POST /api/auth/login
-// @desc    Login user & get token
-// @access  Public
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -97,24 +112,22 @@ router.post('/login', async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const payload = { id: user._id, role: user.role };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'devsecret', { expiresIn: '1d' });
 
-    res.json({ token });
+    return res.json({ token });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server error');
+    console.error('Login error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
 // @route   POST /api/auth/forgot-password
-// @desc    Send password reset email
-// @access  Public
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'User  not found' });
+    if (!user) return res.status(400).json({ message: 'User not found' });
 
     // Generate reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
@@ -122,27 +135,28 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}&email=${email}`;
+    await ensureTransporter();
 
+    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}&email=${email}`;
     const mailOptions = {
-      from: `"Your App" <${process.env.EMAIL_USER}>`,
+      from: `"Your App" <no-reply@example.com>`,
       to: email,
       subject: 'Password Reset',
-      text: `You requested a password reset. Click here to reset your password: ${resetUrl}`,
+      text: `You requested a password reset. Use the link: ${resetUrl}`,
+      html: `<p>Use this link to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
     };
 
-    await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('📧 Password reset email preview URL:', nodemailer.getTestMessageUrl(info));
 
-    res.json({ message: 'Password reset email sent' });
+    return res.json({ message: 'Password reset email sent' });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server error');
+    console.error('Forgot password error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 
 // @route   POST /api/auth/reset-password
-// @desc    Reset password using token
-// @access  Public
 router.post('/reset-password', async (req, res) => {
   const { email, token, newPassword } = req.body;
 
@@ -160,10 +174,10 @@ router.post('/reset-password', async (req, res) => {
     user.resetPasswordExpires = null;
     await user.save();
 
-    res.json({ message: 'Password reset successful' });
+    return res.json({ message: 'Password reset successful' });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server error');
+    console.error('Reset password error:', error);
+    return res.status(500).json({ message: 'Server error' });
   }
 });
 

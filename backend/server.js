@@ -15,47 +15,36 @@ dotenv.config();
 const app = express();
 
 // ✅ Security Middlewares
-app.use(helmet()); // secure headers
-app.use(cors({ origin: "http://localhost:5173", credentials: true })); // allow frontend
-app.use(express.json()); // parse JSON requests
-app.use(morgan("dev")); // logging
+app.use(helmet()); 
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(express.json()); 
+app.use(morgan("dev")); 
 
-// ✅ Custom middleware to sanitize req.body and req.params only (avoid req.query sanitization)
+// ✅ Sanitize req.body and req.params
 app.use((req, res, next) => {
-  if (req.body) {
-    req.body = mongoSanitize.sanitize(req.body, { replaceWith: "_" });
-  }
-  if (req.params) {
-    req.params = mongoSanitize.sanitize(req.params, { replaceWith: "_" });
-  }
-  // Do NOT sanitize req.query to avoid the error
+  if (req.body) req.body = mongoSanitize.sanitize(req.body, { replaceWith: "_" });
+  if (req.params) req.params = mongoSanitize.sanitize(req.params, { replaceWith: "_" });
   next();
 });
 
-// ✅ Custom sanitize for body (extra safety)
+// ✅ Extra safety
 function sanitizeObject(obj) {
   if (!obj || typeof obj !== "object") return obj;
   if (Array.isArray(obj)) return obj.map(sanitizeObject);
   const out = {};
   for (const key of Object.keys(obj)) {
-    if (key.startsWith("$") || key.includes(".")) {
-      continue; // skip dangerous key
-    }
+    if (key.startsWith("$") || key.includes(".")) continue;
     out[key] = sanitizeObject(obj[key]);
   }
   return out;
 }
-
 app.use((req, res, next) => {
   if (req.body) req.body = sanitizeObject(req.body);
   next();
 });
 
-// ✅ Connect Database
+// ✅ Connect DB
 connectDB();
-
-// ✅ Static folder for uploads
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Routes
 app.use("/api/auth", require("./routes/auth"));
@@ -63,7 +52,7 @@ app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/blogs", require("./routes/blogRoutes"));
-app.use("/api/upload", require("./routes/uploadRoutes")); // admin-only uploads
+app.use("/api/upload", require("./routes/uploadRoutes")); // Cloudinary uploads
 
 // ✅ Test Route
 app.get("/", (req, res) => {
