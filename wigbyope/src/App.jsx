@@ -416,7 +416,7 @@ import ResetPassword from "./Pages/ResetPasswordForm";
 
 
 // import AdminDashboard from "./admin/AdminDashboard";
-
+import PrivateRoute from "./Components/PrivateRoute";
 import AdminPanel from "./admin/AdminPanel";
 // import VerifyCodeForm from "./Pages/VerifyCodeForm";
 
