@@ -3,8 +3,9 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const Blog = require("../models/Blogs");
-const { protect } = require("../middleware/auth");
-const admin = require("../middleware/admin");
+const { protect, admin } = require("../middleware/auth")
+// const { protect } = require("../middleware/auth");
+// const admin = require("../middleware/admin.dsk");
 
 // Multer config for blog images
 const storage = multer.diskStorage({

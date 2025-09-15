@@ -1,4 +1,3 @@
-// routes/auth.js
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -9,7 +8,7 @@ const User = require('../models/User');
 
 let transporter = null;
 
-// Ensure transporter exists (Ethereal test account) - lazy init
+// Lazy init Ethereal transporter
 async function ensureTransporter() {
   if (transporter) return transporter;
 
@@ -24,13 +23,15 @@ async function ensureTransporter() {
     },
   });
 
-  console.log('🧪 Ethereal test account created (preview emails):');
+  console.log('🧪 Ethereal test account created:');
   console.log('   user:', testAccount.user);
   console.log('   pass:', testAccount.pass);
   return transporter;
 }
 
-// @route   POST /api/auth/register
+// ----------------------
+// Register
+// ----------------------
 router.post('/register', async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -38,14 +39,12 @@ router.post('/register', async (req, res) => {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
-    // Generate 6-digit verification code
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // IMPORTANT: Do NOT hash here — your User schema pre('save') will hash it.
     user = new User({
       name,
       email,
-      password, // plain here; will be hashed by schema pre('save')
+      password, // will be hashed by schema pre-save
       role: role || 'customer',
       verificationCode,
       isVerified: false,
@@ -53,10 +52,8 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Ensure transporter is ready
     await ensureTransporter();
 
-    // Send verification email
     const mailOptions = {
       from: `"Your App" <no-reply@example.com>`,
       to: email,
@@ -66,40 +63,76 @@ router.post('/register', async (req, res) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-
-    // Log preview URL so you can open it in browser (Ethereal)
-    console.log('📧 Verification email sent. Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    console.log('📧 Verification email preview URL:', nodemailer.getTestMessageUrl(info));
     console.log('🔢 Verification code for', email, ':', verificationCode);
 
-    return res.status(201).json({ message: 'Registered successfully. Please verify your email.' });
+    return res.status(201).json({ message: 'Registered successfully. Please verify your email.', email });
   } catch (error) {
     console.error('Register error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// @route   POST /api/auth/verify-email
-router.post('/verify-email', async (req, res) => {
-  const { email, code } = req.body;
-
+// ----------------------
+// Verify Email
+// ----------------------
+router.post("/verify-email", async (req, res) => {
   try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ message: "Email and code are required" });
+    }
+
+    // ✅ Correct query
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'User not found' });
-    if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
-    if (user.verificationCode !== code) return res.status(400).json({ message: 'Invalid verification code' });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verificationCode !== code) {
+      return res.status(400).json({ message: "Invalid verification code" });
+    }
 
     user.isVerified = true;
-    user.verificationCode = null;
+    user.verificationCode = undefined; // clear code
     await user.save();
 
-    return res.json({ message: 'Email verified successfully' });
-  } catch (error) {
-    console.error('Verify error:', error);
-    return res.status(500).json({ message: 'Server error' });
+    res.json({ message: "Email verified successfully" });
+  } catch (err) {
+    console.error("Verify email error:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-// @route   POST /api/auth/login
+// router.post('/verify-email', async (req, res) => {
+//   const { email, code } = req.body;
+
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(400).json({ message: 'User not found' });
+//     if (user.isVerified) return res.status(400).json({ message: 'Email already verified' });
+//     if (user.verificationCode !== code) return res.status(400).json({ message: 'Invalid verification code' });
+
+//     user.isVerified = true;
+//     user.verificationCode = null;
+//     await user.save();
+
+//     // Auto-login after verification
+//     const payload = { id: user._id, role: user.role };
+//     const token = jwt.sign(payload, process.env.JWT_SECRET || 'devsecret', { expiresIn: '1d' });
+
+//     return res.json({ message: 'Email verified successfully', token });
+//   } catch (error) {
+//     console.error('Verify email error:', error);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// });
+
+// ----------------------
+// Login
+// ----------------------
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -114,14 +147,16 @@ router.post('/login', async (req, res) => {
     const payload = { id: user._id, role: user.role };
     const token = jwt.sign(payload, process.env.JWT_SECRET || 'devsecret', { expiresIn: '1d' });
 
-    return res.json({ token });
+    return res.json({ token, role: user.role });
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 });
 
-// @route   POST /api/auth/forgot-password
+// ----------------------
+// Forgot Password
+// ----------------------
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -129,7 +164,6 @@ router.post('/forgot-password', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'User not found' });
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -142,7 +176,7 @@ router.post('/forgot-password', async (req, res) => {
       from: `"Your App" <no-reply@example.com>`,
       to: email,
       subject: 'Password Reset',
-      text: `You requested a password reset. Use the link: ${resetUrl}`,
+      text: `Use this link to reset your password: ${resetUrl}`,
       html: `<p>Use this link to reset your password: <a href="${resetUrl}">${resetUrl}</a></p>`
     };
 
@@ -156,7 +190,9 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// @route   POST /api/auth/reset-password
+// ----------------------
+// Reset Password
+// ----------------------
 router.post('/reset-password', async (req, res) => {
   const { email, token, newPassword } = req.body;
 

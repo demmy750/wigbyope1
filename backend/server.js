@@ -53,6 +53,7 @@ app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/blogs", require("./routes/blogRoutes"));
 app.use("/api/upload", require("./routes/uploadRoutes")); // Cloudinary uploads
+app.use("/api/admin", require("./routes/adminRoutes"));
 
 // ✅ Test Route
 app.get("/", (req, res) => {

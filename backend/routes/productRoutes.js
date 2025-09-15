@@ -1,8 +1,10 @@
+// productsRoute.js
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/auth"); 
-const admin = require("../middleware/admin"); 
+const { protect, admin } = require("../middleware/auth"); 
 const Product = require("../models/Products");
+
+
 
 // @desc   Get all products
 // @route  GET /api/products

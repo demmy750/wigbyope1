@@ -3,8 +3,9 @@ const express = require("express");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
-const { protect } = require("../middleware/auth");
-const admin = require("../middleware/admin");
+const { protect, admin } = require("../middleware/auth");
+// const { protect } = require("../middleware/auth");
+// const admin = require("../middleware/admin.dsk");
 
 const router = express.Router();
 
@@ -34,8 +35,8 @@ const uploadToCloudinary = (fileBuffer, folder, res) => {
 // ---------------------------
 // Product Upload Route
 // ---------------------------
-router.post("/product", protect, admin, upload.single("image"), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+router.post("/product", protect, admin, upload.array('image', 10), (req, res) => {
+  if (!req.files) return res.status(400).json({ message: "No file uploaded" });
   uploadToCloudinary(req.file.buffer, "wigshop/products", res);
 });
 
