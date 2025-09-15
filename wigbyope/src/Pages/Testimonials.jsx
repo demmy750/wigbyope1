@@ -101,7 +101,7 @@ const testimonials = [
     name: "Jasmine L.",
     location: "Los Angeles, CA",
     feedback:
-      "The team was so professional and attentive. My wig looks natural and feels so comfortable. The customer service made all the difference.",
+      "The team was professional and attentive. My wig looks natural and feels incredibly comfortable. The customer service truly made all the difference.",
     avatar: "https://randomuser.me/api/portraits/women/44.jpg",
   },
   {
@@ -109,8 +109,16 @@ const testimonials = [
     name: "Maya R.",
     location: "Chicago, IL",
     feedback:
-      "I was nervous about wearing a wig, but their expert styling training gave me the confidence to rock my look. The wig quality is top-notch!",
+      "I was initially nervous about wearing a wig, but their expert styling training gave me the confidence to rock my look. The wig quality is top-notch!",
     avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+  },
+  {
+    id: 4,
+    name: "Lily K.",
+    location: "Houston, TX",
+    feedback:
+      "Excellent quality and fantastic styling advice. I feel amazing every time I wear my wig!",
+    avatar: "https://randomuser.me/api/portraits/women/30.jpg",
   },
 ];
 
@@ -125,6 +133,31 @@ const Testimonials = () => {
     autoplaySpeed: 5000,
     arrows: false,
     adaptiveHeight: true,
+    pauseOnFocus: true,
+    pauseOnHover: true,
+    responsive: [
+      {
+        breakpoint: 1440, // large desktops
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 1024, // tablets and small desktops
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 600, // mobile devices
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
 
   return (
@@ -136,26 +169,31 @@ const Testimonials = () => {
         <p className="testimonials-subtitle">
           Hear from our satisfied clients who trust us for premium wigs and expert styling.
         </p>
-        <Slider {...settings}>
+        <Slider {...settings} aria-live="polite" aria-atomic="true">
           {testimonials.map(({ id, name, location, feedback, avatar }) => (
-            <div key={id}>
-              <div
-                className="testimonial-card"
-                tabIndex="0"
-                aria-label={`Testimonial from ${name} from ${location}`}
-              >
-                <img
-                  src={avatar}
-                  alt={`Photo of ${name}`}
-                  className="testimonial-avatar"
-                  loading="lazy"
-                />
-                <div className="testimonial-rating">⭐⭐⭐⭐⭐</div>
-                <blockquote className="testimonial-feedback">“{feedback}”</blockquote>
+            <figure
+              key={id}
+              className="testimonial-card"
+              tabIndex={0}
+              aria-label={`Testimonial from ${name} in ${location}`}
+            >
+              <img
+                src={avatar}
+                alt={`Portrait of ${name}`}
+                className="testimonial-avatar"
+                loading="lazy"
+                width={80}
+                height={80}
+              />
+              <div className="testimonial-rating" aria-label="5 out of 5 stars">
+                ⭐⭐⭐⭐⭐
+              </div>
+              <blockquote className="testimonial-feedback">“{feedback}”</blockquote>
+              <figcaption>
                 <p className="testimonial-name">{name}</p>
                 <p className="testimonial-location">{location}</p>
-              </div>
-            </div>
+              </figcaption>
+            </figure>
           ))}
         </Slider>
       </div>

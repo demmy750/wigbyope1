@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { authAPI } from "../api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function VerifyEmail() {
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const prefilledEmail = location.state?.email || "";
+
+  const [email, setEmail] = useState(prefilledEmail);
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,10 +21,10 @@ export default function VerifyEmail() {
       const res = await authAPI.verifyEmail(email, code);
       setMessage(res.message || "Email verified successfully!");
 
-      // ✅ Auto-redirect to login after 2 seconds
+      // ✅ Auto-redirect to login after 2s
       setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setMessage(err.message);
+      setMessage(err.message || "Verification failed");
     } finally {
       setLoading(false);
     }
@@ -53,11 +56,14 @@ export default function VerifyEmail() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={!!prefilledEmail} // ✅ lock if prefilled
           />
         </div>
 
         <div className="mb-3">
-          <label className="block text-sm font-medium">Verification Code</label>
+          <label className="block text-sm font-medium">
+            Verification Code
+          </label>
           <input
             type="text"
             className="w-full p-2 border rounded-lg"

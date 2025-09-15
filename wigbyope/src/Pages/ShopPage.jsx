@@ -94,7 +94,8 @@ export default function ShopPage() {
     setGalleryIndex((galleryIndex - 1 + detailProduct.images.length) % detailProduct.images.length);
   };
 
-  const relatedProducts = detailProduct
+  // FIX: Add safe check for relatedIds to avoid undefined error
+  const relatedProducts = detailProduct && Array.isArray(detailProduct.relatedIds)
     ? allProducts.filter((p) => detailProduct.relatedIds.includes(p.id))
     : [];
 

@@ -415,9 +415,10 @@ import ForgotPassword from "./Pages/ForgotPasswordForm";
 import ResetPassword from "./Pages/ResetPasswordForm";
 
 
-import AdminDashboard from "./admin/AdminDashboard";
+// import AdminDashboard from "./admin/AdminDashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminPanel from "./admin/AdminPanel";
+// import VerifyCodeForm from "./Pages/VerifyCodeForm";
 
 function App() {
   const [isCartOpen, setCartOpen] = useState(false);
@@ -450,6 +451,7 @@ function App() {
     <Router>
       <CartProvider>
         <div className="min-h-screen flex flex-col">
+          
           <Navbar onCartToggle={toggleCart} />
           <CartSidebar isOpen={isCartOpen} onClose={closeCart} />
 
@@ -459,9 +461,9 @@ function App() {
               <Route
                 path="/admin"
                 element={
-                  // <PrivateRoute adminOnly={true}>
+                  <PrivateRoute adminOnly={true}> 
                     <AdminPanel />
-                  // </PrivateRoute>
+                  </PrivateRoute>
                 }
               />
 
@@ -474,11 +476,13 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/contact" element={<Contact />} />
+              
 
               {/* Auth routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              {/* <Route path="/verify" element={<VerifyCodeForm />} /> */}
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -494,7 +498,7 @@ function App() {
                 }
               />
               <Route path="/track-order/:orderId" element={<OrderTracking />} />
-              <Route path="/adminss" element={<AdminDashboard />} />
+              {/* <Route path="/adminss" element={<AdminDashboard />} /> */}
             </Routes>
 
             {/* Optional: Add simple links for auth navigation */}
