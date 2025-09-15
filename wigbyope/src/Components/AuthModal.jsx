@@ -220,7 +220,7 @@ import "./AuthModal.css";
 import Register from "../Pages/RegisterForm";
 import Login from "../Pages/LoginForm";
 import ForgotPasswordForm from "../Pages/ForgotPasswordForm";
-import VerifyCodeModal from "../Pages/VerifyCodeModal"; // Use your VerifyCodeModal here
+import VerifyCodeModal from "../Pages/VerifyCOdeModal"; // Use your VerifyCodeModal here
 
 export default function AuthModal({ isOpen, onClose, view: initialView, onLoginSuccess }) {
   const [view, setView] = useState(initialView || "register");
