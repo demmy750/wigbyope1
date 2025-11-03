@@ -4,8 +4,6 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const { protect, admin } = require("../middleware/auth");
-// const { protect } = require("../middleware/auth");
-// const admin = require("../middleware/admin.dsk");
 
 const router = express.Router();
 
@@ -16,36 +14,74 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ✅ Multer (store in memory instead of disk)
+// ✅ Multer (store in memory, with limits for safety)
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-// Helper: Upload buffer to Cloudinary
-const uploadToCloudinary = (fileBuffer, folder, res) => {
-  const cld_upload_stream = cloudinary.uploader.upload_stream(
-    { folder },
-    (error, result) => {
-      if (error) return res.status(500).json({ message: error.message });
-      res.json({ message: "Image uploaded successfully", url: result.secure_url });
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB per file
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
     }
-  );
-  streamifier.createReadStream(fileBuffer).pipe(cld_upload_stream);
+  }
+});
+
+// Helper: Upload buffer to Cloudinary (returns a Promise)
+const uploadToCloudinary = (fileBuffer, folder) => {
+  return new Promise((resolve, reject) => {
+    const cld_upload_stream = cloudinary.uploader.upload_stream(
+      { folder },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      }
+    );
+    streamifier.createReadStream(fileBuffer).pipe(cld_upload_stream);
+  });
 };
 
 // ---------------------------
-// Product Upload Route
+// Product Upload Route (Multiple Images)
 // ---------------------------
-router.post("/product", protect, admin, upload.array('image', 10), (req, res) => {
-  if (!req.files) return res.status(400).json({ message: "No file uploaded" });
-  uploadToCloudinary(req.file.buffer, "wigshop/products", res);
+router.post("/product", protect, admin, upload.array("image", 10), async (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: "No files uploaded" });
+  }
+
+  try {
+    // Upload all files in parallel and collect URLs
+    const urls = await Promise.all(
+      req.files.map((file) => uploadToCloudinary(file.buffer, "wigshop/products"))
+    );
+    res.json({ message: "Images uploaded successfully", urls });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ message: err.message || "Image upload failed" });
+  }
 });
 
 // ---------------------------
-// Blog Upload Route
+// Blog Upload Route (Single Image)
 // ---------------------------
-router.post("/blog", protect, admin, upload.single("image"), (req, res) => {
-  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-  uploadToCloudinary(req.file.buffer, "wigshop/blogs", res);
+router.post("/blog", protect, admin, upload.single("image"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  try {
+    const url = await uploadToCloudinary(req.file.buffer, "wigshop/blogs");
+    res.json({ message: "Image uploaded successfully", url });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ message: err.message || "Image upload failed" });
+  }
 });
 
 module.exports = router;
