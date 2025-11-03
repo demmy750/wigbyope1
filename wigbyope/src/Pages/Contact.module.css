@@ -1,0 +1,232 @@
+.contactPage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: "Roboto", sans-serif;
+  color: #333;
+  background: #f9fafb;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.hero {
+  text-align: center;
+  background: linear-gradient(90deg, #d63384, #a52a6a);
+  color: white;
+  padding: 3rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(214 51 132 / 0.4);
+}
+
+.hero h1 {
+  font-size: 2.75rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+}
+
+@media (min-width: 768px) {
+  .contentGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.contactForm {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contactForm h2 {
+  color: #d63384;
+  font-weight: 700;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.contactForm label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  display: block;
+  color: #444;
+}
+
+.contactForm input,
+.contactForm textarea {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.3s ease;
+}
+
+.contactForm input:focus,
+.contactForm textarea:focus {
+  outline: none;
+  border-color: #d63384;
+  box-shadow: 0 0 5px #d63384aa;
+}
+
+.submitBtn {
+  background-color: #d63384;
+  color: white;
+  font-weight: 700;
+  font-size: 1.125rem;
+  padding: 0.75rem 0;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.submitBtn:hover,
+.submitBtn:focus {
+  background-color: #a52a6a;
+  outline: none;
+}
+
+.errorMessage {
+  color: #d63384;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.successMessage {
+  color: #2f855a;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.infoSection {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.businessInfo {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+  font-size: 1rem;
+  color: #444;
+}
+
+.businessInfo h2 {
+  color: #d63384;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.businessInfo p {
+  margin-bottom: 0.5rem;
+}
+
+.link {
+  color: #d63384;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link:hover,
+.link:focus {
+  text-decoration: underline;
+  outline: none;
+}
+
+.mapContainer {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+}
+
+.socialMedia {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.05);
+  text-align: center;
+}
+
+.socialMedia h2 {
+  color: #d63384;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.socialLinks {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.socialLink {
+  color: #d63384;
+  font-size: 2rem;
+  transition: color 0.3s ease;
+}
+
+.socialLink:hover,
+.socialLink:focus {
+  color: #a52a6a;
+  outline: none;
+}
+
+.socialIcon {
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
+.cta {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.ctaButton {
+  background-color: #d63384;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+  padding: 0.75rem 3rem;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.ctaButton:hover,
+.ctaButton:focus {
+  background-color: #a52a6a;
+  outline: none;
+}

@@ -1,0 +1,148 @@
+/* AdminDashboard.css */
+
+/* Reset some basic elements */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.admin-dashboard {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Heading styles */
+.admin-dashboard h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #111827;
+}
+
+.admin-dashboard h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+/* Dashboard cards container */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Individual card */
+.dashboard-card {
+  background-color: #fff;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+
+.dashboard-card p.label {
+  font-size: 0.875rem;
+  color: #6b7280; /* gray-500 */
+  margin: 0 0 0.5rem 0;
+}
+
+.dashboard-card p.value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* Table container */
+.table-container {
+  overflow-x: auto;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  padding: 1rem 1.25rem;
+}
+
+/* Table styles */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.dashboard-table thead tr {
+  border-bottom: 2px solid #d1d5db; /* gray-300 */
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #374151; /* gray-700 */
+  white-space: nowrap;
+}
+
+.dashboard-table th {
+  font-weight: 600;
+  background-color: #f3f4f6; /* gray-100 */
+}
+
+.dashboard-table tbody tr {
+  border-bottom: 1px solid #e5e7eb; /* gray-200 */
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.dashboard-table tbody td {
+  color: #4b5563; /* gray-600 */
+}
+
+/* Empty state row */
+.empty-row td {
+  text-align: center;
+  color: #9ca3af; /* gray-400 */
+  font-style: italic;
+  padding: 2rem 1rem;
+}
+
+/* Loading and error messages */
+.message {
+  padding: 1.5rem;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.message.error {
+  color: #dc2626; /* red-600 */
+}
+
+/* Responsive styles */
+@media (min-width: 640px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
