@@ -1,0 +1,110 @@
+/* Import a font for elegance (optional: add Google Fonts link in your HTML head) */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@300;400&display=swap');
+
+/* Main container: Centers the form with responsive max-width */
+.login-container {
+  max-width: 450px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: 'Roboto', sans-serif; /* Clean, modern font */
+}
+
+/* Header for non-modal mode: Simple and professional */
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.login-header h1 {
+  font-family: 'Playfair Display', serif; /* Elegant serif for titles */
+  font-size: 2rem;
+  color: #4A0E4E; /* Deep purple, professional tone */
+  margin: 0;
+}
+.login-header p {
+  font-size: 1rem;
+  /* color: #666; */
+  margin: 0.5rem 0 0;
+}
+
+/* Form styling */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Consistent spacing */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #4A0E4E;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fff;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #D4AF37; /* Gold focus */
+  box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+}
+
+.form-error {
+  color: #e74c3c; /* Red for errors */
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.form-status {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Button: Gradient and hover effects for professionalism */
+.login-button {
+  background: linear-gradient(135deg, #4A0E4E 0%, #6A1B9A 100%); /* Purple gradient */
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+.login-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6A1B9A 0%, #4A0E4E 100%);
+  transform: translateY(-2px);
+}
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .login-container {
+    margin: 1rem auto;
+    padding: 0.5rem;
+  }
+  .login-card {
+    padding: 1.5rem;
+  }
+  .login-header h1 {
+    font-size: 1.5rem;
+  }
+}

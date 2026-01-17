@@ -217,7 +217,7 @@
 import React, { useState } from "react";
 import AdminDashboard from "./AdminDashboard.jsx";
 import ProductsTab from "./DashboardPanel.jsx";
-import OrdersTab from "./OrdersTab";
+import OrdersTab from "./OrdersTab.jsx";  // UPDATED: Added .jsx extension for clarity
 
 const styles = {
   adminPanel: {

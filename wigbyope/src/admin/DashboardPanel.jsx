@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-// import fetchWithAuth from "../Components/AuthModal";
+import React, { useState, useEffect, useRef } from "react";
 import { fetchWithAuth } from "../api";
+import './DashboardPanel.css'; // Import your custom CSS
 
 export default function ProductsTab({ activeTab }) {
   const [products, setProducts] = useState([]);
@@ -9,17 +9,29 @@ export default function ProductsTab({ activeTab }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const [addImagePreviews, setAddImagePreviews] = useState([]);
   const [editImagePreviews, setEditImagePreviews] = useState([]);
+  const [addSelectedFiles, setAddSelectedFiles] = useState([]); // Track accumulated files for add
+  const [editSelectedFiles, setEditSelectedFiles] = useState([]); // Track accumulated files for edit
+  // const [removingImages, setRemovingImages] = useState([]); // Track which existing images to remove in edit (array of indices)
+
+  // Refs for file inputs to trigger "Add More"
+  const addFileInputRef = useRef(null);
+  const editFileInputRef = useRef(null);
 
   useEffect(() => {
     if (activeTab !== "products") return;
-
+    setProductsError(null);  // Reset error
     const fetchProducts = async () => {
       setLoadingProducts(true);
       try {
         const data = await fetchWithAuth("/api/products");
-        setProducts(data);
+        console.log('Fetched products from admin:', data);  // DEBUG: Verify _id and images are unique
+        setProducts(data || []);  // Ensure it's always an array
+        
       } catch (err) {
+        // setProductsError(err.message || "Failed to load products");
+        console.error('Admin fetch error:', err);  // DEBUG
         setProductsError(err.message || "Failed to load products");
+        setProducts([]);  // Fallback to empty array to avoid undefined
       } finally {
         setLoadingProducts(false);
       }
@@ -28,45 +40,114 @@ export default function ProductsTab({ activeTab }) {
     fetchProducts();
   }, [activeTab]);
 
+  // Cleanup object URLs on unmount or reset to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      addImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+      editImagePreviews.forEach((url) => {
+        if (url && url.startsWith('blob:')) URL.revokeObjectURL(url); // Only revoke blob URLs, not server URLs
+      });
+    };
+  }, [addImagePreviews, editImagePreviews]);
+
   const handleAddImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 1) {
-      const previews = files.map((file) => URL.createObjectURL(file));
-      setAddImagePreviews(previews);
-    } else {
-      setAddImagePreviews([]);
+    const newFiles = Array.from(e.target.files);
+    if (newFiles.length === 0) return;
+
+    // Append new files to existing
+    const updatedFiles = [...addSelectedFiles, ...newFiles];
+    if (updatedFiles.length > 10) {
+      alert("Maximum 10 images allowed!");
+      e.target.value = ''; // Clear input
+      return;
     }
+    setAddSelectedFiles(updatedFiles);
+
+    // Create previews for new files only and append
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    setAddImagePreviews((prev) => [...prev, ...newPreviews]);
+    e.target.value = ''; // Clear input for next selection
   };
 
   const handleEditImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 0) {
-      const previews = files.map((file) => URL.createObjectURL(file));
-      setEditImagePreviews(previews);
+    const newFiles = Array.from(e.target.files);
+    if (newFiles.length === 0) return;
+
+    // Check total (existing + new)
+    const totalImages = (editingProduct?.images?.length || 0) + editSelectedFiles.length + newFiles.length;
+    if (totalImages > 10) {
+      alert("Maximum 10 images total allowed!");
+      e.target.value = '';
+      return;
+    }
+
+    // Append new files to existing new files
+    const updatedFiles = [...editSelectedFiles, ...newFiles];
+    setEditSelectedFiles(updatedFiles);
+
+    // Create previews for new files only and append to new previews (existing are server URLs)
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    // Filter to keep only existing + new blob previews
+    setEditImagePreviews((prev) => {
+      const existing = editingProduct?.images || [];
+      const currentNew = prev.filter(url => url.startsWith('blob:'));
+      return [...existing, ...currentNew, ...newPreviews];
+    });
+    e.target.value = ''; // Clear input
+  };
+
+  // Trigger file input click for "Add More"
+  const triggerAddMoreImages = (isEdit = false) => {
+    if (isEdit) {
+      editFileInputRef.current?.click();
     } else {
-      setEditImagePreviews([]);
+      addFileInputRef.current?.click();
+    }
+  };
+
+  // Remove a specific new preview/file (only for new ones; index based on new previews array)
+  const removeNewPreview = (indexToRemove, isEdit = false) => {
+    if (isEdit) {
+      // Remove from new files and new previews only (existing stay)
+      setEditSelectedFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+      setEditImagePreviews((prev) => {
+        const existing = editingProduct?.images || [];
+        const newPreviews = prev.filter(url => url.startsWith('blob:')).filter((_, i) => i !== indexToRemove);
+        return [...existing, ...newPreviews];
+      });
+    } else {
+      setAddSelectedFiles((prev) => prev.filter((_, i) => i !== indexToRemove));
+      setAddImagePreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
     }
   };
 
   const uploadImages = async (files) => {
-    const urls = [];
-    for (let i = 0; i < files.length; i++) {
-      const imgData = new FormData();
-      imgData.append("image", files[i]);
+    if (files.length === 0) return [];
 
+    const formData = new FormData();
+    // Append all files (Multer will collect as req.files)
+    Array.from(files).forEach((file) => {
+      formData.append('image', file);
+    });
+
+    try {
       const uploadRes = await fetch("/api/upload/product", {
         method: "POST",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        body: imgData,
+        headers: { 
+          Authorization: `Bearer ${localStorage.getItem("token")}` 
+        },
+        body: formData,
       });
 
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok) {
         throw new Error(uploadData.message || "Image upload failed");
       }
-      urls.push(uploadData.url);
+      return uploadData.urls || [];
+    } catch (err) {
+      console.error("Upload error:", err);
+      throw err;
     }
-    return urls;
   };
 
   const handleAddProduct = async (e) => {
@@ -75,9 +156,8 @@ export default function ProductsTab({ activeTab }) {
 
     try {
       let imageUrls = [];
-      const files = e.target.image.files;
-      if (files.length > 0) {
-        imageUrls = await uploadImages(files);
+      if (addSelectedFiles.length > 0) {
+        imageUrls = await uploadImages(addSelectedFiles);
       }
 
       const productData = {
@@ -88,9 +168,9 @@ export default function ProductsTab({ activeTab }) {
         color: formData.get("color"),
         length: formData.get("length"),
         stock: parseInt(formData.get("stock")),
-        // wigType: formData.get("wigType"),
-        // hairTexture: formData.get("hairTexture"),
-        // capSize: formData.get("capSize"),
+        wigType: formData.get("wigType"),
+        hairTexture: formData.get("hairTexture"),
+        capSize: formData.get("capSize"),
         images: imageUrls,
       };
 
@@ -103,6 +183,7 @@ export default function ProductsTab({ activeTab }) {
       setProducts([newProduct, ...products]);
       e.target.reset();
       setAddImagePreviews([]);
+      setAddSelectedFiles([]);
       alert("Product added successfully!");
     } catch (err) {
       alert("Error adding product: " + err.message);
@@ -126,9 +207,10 @@ export default function ProductsTab({ activeTab }) {
 
     try {
       let imageUrls = [];
-      const files = e.target.image.files;
-      if (files.length > 0) {
-        imageUrls = await uploadImages(files);
+      let finalImages = editingProduct.images || []; // Preserve existing
+      if (editSelectedFiles.length > 0) {
+        imageUrls = await uploadImages(editSelectedFiles);
+        finalImages = [...finalImages, ...imageUrls]; // Append new to existing
       }
 
       const productData = {
@@ -139,10 +221,10 @@ export default function ProductsTab({ activeTab }) {
         color: formData.get("color"),
         length: formData.get("length"),
         stock: parseInt(formData.get("stock")),
-        // wigType: formData.get("wigType"),
-        // hairTexture: formData.get("hairTexture"),
-        // capSize: formData.get("capSize"),
-        images: imageUrls.length > 0 ? imageUrls : undefined,
+        wigType: formData.get("wigType"),
+        hairTexture: formData.get("hairTexture"),
+        capSize: formData.get("capSize"),
+        images: finalImages,
       };
 
       const updated = await fetchWithAuth(`/api/products/${id}`, {
@@ -154,74 +236,116 @@ export default function ProductsTab({ activeTab }) {
       setProducts(products.map((p) => (p._id === id ? updated : p)));
       setEditingProduct(null);
       setEditImagePreviews([]);
+      setEditSelectedFiles([]);
       alert("Product updated successfully!");
     } catch (err) {
       alert("Error updating product: " + err.message);
     }
   };
 
+  // Reset edit previews to show existing images when opening modal
+  useEffect(() => {
+    if (editingProduct) {
+      // Existing images are server URLs, new previews are blob URLs
+      setEditImagePreviews(editingProduct.images || []);
+      setEditSelectedFiles([]);
+    }
+  }, [editingProduct]);
+
   if (activeTab !== "products") return null;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
-      <h3 className="text-xl font-semibold mb-4">Manage Products</h3>
+    <div className="products-tab">
+      <h3 className="tab-title">Manage Products</h3>
 
       {/* Add product form */}
-      <form className="grid gap-4 mb-6" onSubmit={handleAddProduct}>
-        <input name="name" placeholder="Product Name" className="border p-2 rounded" required />
-        <input name="price" type="number" step="0.01" placeholder="Price" className="border p-2 rounded" required />
-        <textarea name="description" placeholder="Description" className="border p-2 rounded" />
-        <input name="category" placeholder="Category" className="border p-2 rounded" />
-        <input name="color" placeholder="Color" className="border p-2 rounded" />
-        <input name="length" placeholder="Length" className="border p-2 rounded" />
-        <input name="stock" type="number" placeholder="Stock" className="border p-2 rounded" />
-        {/* <input name="wigType" placeholder="Wig Type" className="border p-2 rounded" />
-        <input name="hairTexture" placeholder="Hair Texture" className="border p-2 rounded" />
-        <input name="capSize" placeholder="Cap Size" className="border p-2 rounded" /> */}
-        <input type="file" name="image" accept="image/*" multiple className="border p-2 rounded" onChange={handleAddImageChange} />
-        {addImagePreviews.length > 0 && (
-          <div className="flex gap-2 mt-2">
+      <form className="add-product-form" onSubmit={handleAddProduct}>
+        <input name="name" placeholder="Product Name" className="form-input" required />
+        <input name="price" type="number" step="0.01" placeholder="Price" className="form-input" required />
+        <textarea name="description" placeholder="Description" className="form-input" />
+        <input name="category" placeholder="Category" className="form-input" />
+        <input name="color" placeholder="Color" className="form-input" />
+        <input name="length" placeholder="Length" className="form-input" />
+        <input name="stock" type="number" placeholder="Stock" className="form-input" />
+        <input name="wigType" placeholder="Wig Type" className="form-input" />
+        <input name="hairTexture" placeholder="Hair Texture" className="form-input" />
+        <input name="capSize" placeholder="Cap Size" className="form-input" />
+        <input 
+          type="file" 
+          name="image" 
+          accept="image/*" 
+          multiple 
+          ref={addFileInputRef}
+          className="file-input" 
+          onChange={handleAddImageChange}
+          style={{ display: 'none' }} // Hidden, triggered by button
+        />
+        <div className="image-section">
+          <div className="image-previews">
             {addImagePreviews.map((src, i) => (
-              <img key={i} src={src} alt={`Preview ${i}`} className="w-20 h-20 object-cover rounded" />
+              <div key={i} className="preview-wrapper">
+                <img src={src} alt={`Preview ${i}`} className="preview-image" />
+                <button 
+                  type="button" 
+                  className="remove-preview" 
+                  onClick={() => removeNewPreview(i)}
+                >
+                  ×
+                </button>
+              </div>
             ))}
           </div>
-        )}
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Add Product</button>
+          {addSelectedFiles.length > 0 && (
+            <p className="image-counter">{addSelectedFiles.length} image(s) selected</p>
+          )}
+          <button 
+            type="button" 
+            className="add-more-btn" 
+            onClick={() => triggerAddMoreImages()}
+          >
+            + Add More Images
+          </button>
+        </div>
+        <button type="submit" className="submit-btn">Add Product</button>
       </form>
 
       {/* Products list */}
-      {loadingProducts && <p>Loading products...</p>}
-      {productsError && <p className="text-red-600">{productsError}</p>}
+      {loadingProducts && <p className="loading-msg">Loading products...</p>}
+      {productsError && <p className="error-msg">{productsError}</p>}
 
       {products.length === 0 && !loadingProducts && (
-        <p className="text-gray-600">No products found. Please add your first product above.</p>
+        <p className="no-products-msg">No products found. Please add your first product above.</p>
       )}
 
-      <div className="overflow-x-auto mt-4">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b bg-gray-50">
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Price</th>
-              <th className="p-2 text-left">Stock</th>
-              <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Wig Type</th>
-              <th className="p-2 text-left">Hair Texture</th>
-              <th className="p-2 text-left">Actions</th>
+      <div className="table-wrapper">
+        <table className="products-table">
+          <thead className="table-header">
+            <tr className="header-row">
+              <th className="header-cell">Name</th>
+              <th className="header-cell">Price</th>
+              <th className="header-cell">Stock</th>
+              <th className="header-cell">Category</th>
+              <th className="header-cell">Color</th>
+              <th className="header-cell">Length</th>
+              <th className="header-cell">Wig Type</th>
+              <th className="header-cell">Hair Texture</th>
+              <th className="header-cell">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="table-body">
             {products.map((p) => (
-              <tr key={p._id} className="border-b">
-                <td className="p-2">{p.name}</td>
-                <td className="p-2">${p.price.toFixed(2)}</td>
-                <td className="p-2">{p.stock}</td>
-                <td className="p-2">{p.category || "-"}</td>
-                <td className="p-2">{p.wigType || "-"}</td>
-                <td className="p-2">{p.hairTexture || "-"}</td>
-                <td className="p-2 space-x-2">
-                  <button onClick={() => setEditingProduct(p)} className="text-blue-600 hover:underline">Edit</button>
-                  <button onClick={() => handleDeleteProduct(p._id)} className="text-red-600 hover:underline">Delete</button>
+              <tr key={p._id} className="data-row">
+                <td className="data-cell">{p.name}</td>
+                <td className="data-cell">${p.price ? p.price.toFixed(2) : '0.00'}</td>
+                <td className="data-cell">{p.stock || 0}</td>
+                <td className="data-cell">{p.category || "-"}</td>
+                <td className="data-cell">{p.color || "-"}</td>
+                <td className="data-cell">{p.length || "-"}</td>
+                <td className="data-cell">{p.wigType || "-"}</td>
+                <td className="data-cell">{p.hairTexture || "-"}</td>
+                <td className="data-cell action-cell">
+                  <button onClick={() => setEditingProduct(p)} className="edit-btn">Edit</button>
+                  <button onClick={() => handleDeleteProduct(p._id)} className="delete-btn">Delete</button>
                 </td>
               </tr>
             ))}
@@ -231,35 +355,84 @@ export default function ProductsTab({ activeTab }) {
 
       {/* Edit product modal */}
       {editingProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Edit Product</h3>
-            <form onSubmit={(e) => handleUpdateProduct(e, editingProduct._id)} className="grid gap-3">
-              <input name="name" defaultValue={editingProduct.name} placeholder="Product Name" className="border p-2 rounded" required />
-              <input name="price" defaultValue={editingProduct.price} type="number" step="0.01" placeholder="Price" className="border p-2 rounded" required />
-              <textarea name="description" defaultValue={editingProduct.description} placeholder="Description" className="border p-2 rounded" />
-              <input name="category" defaultValue={editingProduct.category} placeholder="Category" className="border p-2 rounded" />
-              <input name="color" defaultValue={editingProduct.color} placeholder="Color" className="border p-2 rounded" />
-              <input name="length" defaultValue={editingProduct.length} placeholder="Length" className="border p-2 rounded" />
-              <input name="stock" defaultValue={editingProduct.stock} type="number" placeholder="Stock" className="border p-2 rounded" />
-              <input name="wigType" defaultValue={editingProduct.wigType} placeholder="Wig Type" className="border p-2 rounded" />
-              <input name="hairTexture" defaultValue={editingProduct.hairTexture} placeholder="Hair Texture" className="border p-2 rounded" />
-              <input name="capSize" defaultValue={editingProduct.capSize} placeholder="Cap Size" className="border p-2 rounded" />
-              <input type="file" name="image" accept="image/*" multiple className="border p-2 rounded" onChange={handleEditImageChange} />
-              {(editImagePreviews.length > 0 || (editingProduct.images && editingProduct.images.length > 0)) && (
-                <div className="flex gap-2 mt-2">
-                  {editImagePreviews.length > 0
-                    ? editImagePreviews.map((src, i) => (
-                        <img key={i} src={src} alt={`Preview ${i}`} className="w-20 h-20 object-cover rounded" />
-                      ))
-                    : editingProduct.images.map((url, i) => (
-                        <img key={i} src={url} alt={`Current ${i}`} className="w-20 h-20 object-cover rounded" />
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="edit-title">Edit Product</h3>
+            <form onSubmit={(e) => handleUpdateProduct(e, editingProduct._id)} className="edit-product-form">
+              <input name="name" defaultValue={editingProduct.name} placeholder="Product Name" className="form-input" required />
+              <input name="price" defaultValue={editingProduct.price} type="number" step="0.01" placeholder="Price" className="form-input" required />
+              <textarea name="description" defaultValue={editingProduct.description} placeholder="Description" className="form-input" />
+              <input name="category" defaultValue={editingProduct.category} placeholder="Category" className="form-input" />
+              <input name="color" defaultValue={editingProduct.color} placeholder="Color" className="form-input" />
+              <input name="length" defaultValue={editingProduct.length} placeholder="Length" className="form-input" />
+              <input name="stock" defaultValue={editingProduct.stock} type="number" placeholder="Stock" className="form-input" />
+              <input name="wigType" defaultValue={editingProduct.wigType} placeholder="Wig Type" className="form-input" />
+              <input name="hairTexture" defaultValue={editingProduct.hairTexture} placeholder="Hair Texture" className="form-input" />
+              <input name="capSize" defaultValue={editingProduct.capSize} placeholder="Cap Size" className="form-input" />
+              <input 
+                type="file" 
+                name="image" 
+                accept="image/*" 
+                multiple 
+                ref={editFileInputRef}
+                className="file-input" 
+                onChange={handleEditImageChange}
+                style={{ display: 'none' }} // Hidden, triggered by button
+              />
+              <div className="image-section">
+                <div className="image-previews">
+                  {/* Existing images (non-removable) */}
+                  {editingProduct.images && editingProduct.images.length > 0 && (
+                    <>
+                      <p className="existing-images-label">Existing Images:</p>
+                      {editingProduct.images.map((url, i) => (
+                        <div key={`existing-${i}`} className="preview-wrapper existing-preview">
+                          <img src={url} alt={`Existing ${i}`} className="preview-image" />
+                          {/* No remove button for existing */}
+                        </div>
                       ))}
+                    </>
+                  )}
+                  {/* New previews (removable) */}
+                  {editImagePreviews.filter(url => url.startsWith('blob:')).map((src, i) => (
+                    <div key={`new-${i}`} className="preview-wrapper">
+                      <img src={src} alt={`New Preview ${i}`} className="preview-image" />
+                      <button 
+                        type="button" 
+                        className="remove-preview" 
+                        onClick={() => removeNewPreview(i, true)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              )}
-              <div className="flex justify-end gap-3 mt-4">
-                <button type="button" onClick={() => { setEditingProduct(null); setEditImagePreviews([]); }} className="px-4 py-2 rounded bg-gray-200">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">Update</button>
+                {editSelectedFiles.length > 0 && (
+                  <p className="image-counter">{editSelectedFiles.length} new image(s) selected</p>
+                )}
+                <button 
+                  type="button" 
+                  className="add-more-btn" 
+                  onClick={() => triggerAddMoreImages(true)}
+                >
+                  + Add More Images
+                </button>
+              </div>
+              <div className="modal-buttons">
+                <button 
+                  type="button" 
+                  onClick={() => { 
+                    setEditingProduct(null); 
+                    setEditImagePreviews([]); 
+                    setEditSelectedFiles([]); 
+                  }} 
+                  className="cancel-btn"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="update-btn">
+                  Update
+                </button>
               </div>
             </form>
           </div>

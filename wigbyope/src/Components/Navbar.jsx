@@ -1,3 +1,174 @@
+// // Updated Navbar.js
+// import React, { useState, useContext, useEffect } from "react";
+// import { CartContext } from "../context/CartContext";
+// import { Link, useNavigate } from "react-router-dom";
+// import AuthModal from "./AuthModal";
+// import "./Navbar.css";
+
+// function Navbar({ onCartToggle }) {
+//   const { cartItems } = useContext(CartContext);
+//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [authModal, setAuthModal] = useState({ open: false, view: "register" });
+//   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+//   const navigate = useNavigate();
+//   const { clearCart } = useContext(CartContext);
+
+//   // Check login status on mount and listen for changes (e.g., logout)
+//   useEffect(() => {
+//     const checkLogin = () => {
+//       const token = localStorage.getItem("token");
+//       setIsLoggedIn(!!token);
+//     };
+//     checkLogin(); // Initial check
+
+//     // Listen for storage changes (e.g., login/logout in another tab or component)
+//     window.addEventListener("storage", checkLogin);
+    
+//     // Listen for custom auth change events (for same-tab updates)
+//     window.addEventListener("authChange", checkLogin);
+    
+//     return () => {
+//       window.removeEventListener("storage", checkLogin);
+//       window.removeEventListener("authChange", checkLogin); // Clean up
+//     };
+//   }, []);
+
+//   function openAuth(view) {
+//     setAuthModal({ open: true, view });
+//     setMobileMenuOpen(false);
+//   }
+
+//   function closeAuth() {
+//     setAuthModal({ open: false, view: "register" });
+//   }
+
+//   function handleLogout() {
+//     localStorage.removeItem("token");
+//     clearCart(); 
+//     setIsLoggedIn(false); // Force update
+//     setMobileMenuOpen(false);
+//     navigate("/");
+    
+//     // Dispatch custom event to notify other components (like Navbar in same tab)
+//     window.dispatchEvent(new Event("authChange"));
+//   }
+
+//   // Close mobile menu on navigation
+//   function handleLinkClick() {
+//     setMobileMenuOpen(false);
+//   }
+
+//   // Navigate to profile on user icon click
+//   function handleProfileClick() {
+//     navigate("/profile");
+//   }
+
+//   return (
+//     <>
+//       <nav className="navbar" role="navigation" aria-label="Main navigation">
+//         <div className="navbar-container">
+//           {/* Logo */}
+//           <div className="navbar-logo">
+//             WIG<span>BYOPE</span>
+//           </div>
+
+//           {/* Desktop Links */}
+//           <ul className="navbar-links">
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           {/* Actions */}
+//           <div className="navbar-actions">
+//             {/* Cart Button */}
+//             <button onClick={onCartToggle} className="icon-btn cart-btn" aria-label="Cart">
+//               <i className="fas fa-shopping-bag" aria-hidden="true"></i>
+//               {cartItems.length > 0 && (
+//                 <span className="cart-badge" aria-live="polite">{cartItems.length}</span>
+//               )}
+//             </button>
+
+//             {/* User Auth / Profile */}
+//             {isLoggedIn ? (
+//               <button
+//                 className="icon-btn user-icon-btn"
+//                 aria-label="Go to profile"
+//                 onClick={handleProfileClick}
+//               >
+//                 <i className="fas fa-user-circle" aria-hidden="true"></i>
+//               </button>
+//             ) : (
+//               <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//             )}
+
+//             {/* Mobile Menu Toggle */}
+//             <button
+//               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+//               className="mobile-menu-btn"
+//               aria-label="Toggle mobile menu"
+//               aria-expanded={mobileMenuOpen}
+//             >
+//               <i className="fas fa-bars" aria-hidden="true"></i>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Mobile Menu */}
+//         <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} role="menu">
+//           <button
+//             className="close-btn"
+//             onClick={() => setMobileMenuOpen(false)}
+//             aria-label="Close menu"
+//           >
+//             &times;
+//           </button>
+//           <ul>
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           <div className="mobile-actions">
+//             {isLoggedIn ? (
+//               <>
+//                 <button className="btn-gradientt" onClick={handleProfileClick}>Profile</button>
+//                 <button className="btn-outline" onClick={handleLogout}>Logout</button>
+//               </>
+//             ) : (
+//               <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//             )}
+//           </div>
+//         </div>
+//       </nav>
+
+//       {/* Auth Modal */}
+//       <AuthModal
+//         isOpen={authModal.open}
+//         view={authModal.view}
+//         onClose={closeAuth}
+//         onLoginSuccess={() => {
+//           setIsLoggedIn(true);
+//           closeAuth();
+//         }}
+//       />
+//     </>
+//   );
+// }
+
+// export default Navbar;
+
+
+
+
+
+
+// Updated Navbar.js
 import React, { useState, useContext, useEffect } from "react";
 import { CartContext } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -5,19 +176,28 @@ import AuthModal from "./AuthModal";
 import "./Navbar.css";
 
 function Navbar({ onCartToggle }) {
-  const { cartItems } = useContext(CartContext);
+  const { cartItems, clearCart } = useContext(CartContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModal, setAuthModal] = useState({ open: false, view: "register" });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  {showForgotPassword && <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />}
 
   const navigate = useNavigate();
 
-  // Check login status on mount
+  // Check login status and listen for changes
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    const checkLogin = () => {
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+    };
+
+    checkLogin();
+    window.addEventListener("storage", checkLogin);
+    window.addEventListener("authChange", checkLogin);
+
+    return () => {
+      window.removeEventListener("storage", checkLogin);
+      window.removeEventListener("authChange", checkLogin);
+    };
   }, []);
 
   function openAuth(view) {
@@ -31,87 +211,109 @@ function Navbar({ onCartToggle }) {
 
   function handleLogout() {
     localStorage.removeItem("token");
+    clearCart();
     setIsLoggedIn(false);
     setMobileMenuOpen(false);
     navigate("/");
+
+    // Notify other components in same tab
+    window.dispatchEvent(new Event("authChange"));
   }
 
-  // Close mobile menu on navigation
   function handleLinkClick() {
     setMobileMenuOpen(false);
   }
 
+  function handleProfileClick() {
+    navigate("/profile");
+  }
+
   return (
     <>
-      <nav className="navbar">
+      <nav className="navbar" role="navigation" aria-label="Main navigation">
         <div className="navbar-container">
-          {/* Logo */}
-           <div className="navbar-logo">
-             WIG<span>BYOPE</span>
-           </div>
-          <ul className="navbar-links">
-            <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
-            <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
-            <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
-            <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
-            <li><Link to="/blog" onClick={handleLinkClick}>Blog</Link></li>
-            <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
-            {/* <li><Link to="/coo" onClick={handleLinkClick}>Coo</Link></li> */}
-          </ul>
+          {/* Left Side: Logo + Links */}
+          <div className="navbar-left">
+            {/* Logo */}
+            <div className="navbar-logo">
+              WIG<span>BYOPE</span>
+            </div>
 
+            {/* Desktop Links */}
+            <ul className="navbar-links">
+              <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+              <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+              <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+              <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+              <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+            </ul>
+          </div>
+
+          {/* Right Side: Actions */}
           <div className="navbar-actions">
-            {/* <button onClick={() => alert("Search feature coming soon!")} className="icon-btn" aria-label="Search">
-              <i className="fas fa-search"></i>
-            </button> */}
-
+            {/* Cart Button */}
             <button onClick={onCartToggle} className="icon-btn cart-btn" aria-label="Cart">
-              <i className="fas fa-shopping-bag"></i>
+              <i className="fas fa-shopping-bag" aria-hidden="true"></i>
               {cartItems.length > 0 && (
                 <span className="cart-badge" aria-live="polite">{cartItems.length}</span>
               )}
             </button>
 
+            {/* Auth/Profile Button */}
             {isLoggedIn ? (
-              <button className="btn-outline" onClick={handleLogout}>Logout</button>
+              <button
+                className="icon-btn user-icon-btn"
+                aria-label="Go to profile"
+                onClick={handleProfileClick}
+              >
+                <i className="fas fa-user-circle" aria-hidden="true"></i>
+              </button>
             ) : (
-              <>
-                {/* <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button> */}
-                <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
-              </>
+              <button className="btn-gradientt" onClick={() => openAuth("register")}>
+                Sign Up
+              </button>
             )}
 
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="mobile-menu-btn"
               aria-label="Toggle mobile menu"
               aria-expanded={mobileMenuOpen}
             >
-              <i className="fas fa-bars"></i>
+              <i className="fas fa-bars" aria-hidden="true"></i>
             </button>
           </div>
         </div>
 
-        <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
+        {/* Mobile Menu */}
+        <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} role="menu">
+          <button
+            className="close-btn"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            &times;
+          </button>
+
           <ul>
             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
-            <li><Link to="/blog" onClick={handleLinkClick}>Blog</Link></li>
             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
-            {/* <li><Link to="/coo" onClick={handleLinkClick}>Coo</Link></li> */}
           </ul>
 
-          <li className="mobile-actions">
+          <div className="mobile-actions">
             {isLoggedIn ? (
-              <button className="btn-gradient" onClick={handleLogout}>Logout</button>
-            ) : (
               <>
-                {/* <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button> */}
-                <button className="btn-gradient" onClick={() => openAuth("register")}>Sign Up</button>
+                <button className="btn-gradientt" onClick={handleProfileClick}>Profile</button>
+                <button className="btn-outline" onClick={handleLogout}>Logout</button>
               </>
+            ) : (
+              <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
             )}
-          </li>
+          </div>
         </div>
       </nav>
 
@@ -130,6 +332,517 @@ function Navbar({ onCartToggle }) {
 }
 
 export default Navbar;
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useContext, useEffect } from "react";
+// import { CartContext } from "../context/CartContext";
+// import { Link, useNavigate } from "react-router-dom";
+// import AuthModal from "./AuthModal";
+// import "./Navbar.css";
+
+// function Navbar({ onCartToggle }) {
+//   const { cartItems } = useContext(CartContext);
+//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [authModal, setAuthModal] = useState({ open: false, view: "register" });
+//   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+//   const navigate = useNavigate();
+//   const { clearCart } = useContext(CartContext);
+
+//   // Check login status on mount and listen for changes (e.g., logout)
+//   useEffect(() => {
+//     const checkLogin = () => {
+//       const token = localStorage.getItem("token");
+//       setIsLoggedIn(!!token);
+//     };
+//     checkLogin(); // Initial check
+
+//     // Listen for storage changes (e.g., login/logout in another tab or component)
+//     window.addEventListener("storage", checkLogin);
+//     return () => window.removeEventListener("storage", checkLogin);
+//   }, []);
+
+//   function openAuth(view) {
+//     setAuthModal({ open: true, view });
+//     setMobileMenuOpen(false);
+//   }
+
+//   function closeAuth() {
+//     setAuthModal({ open: false, view: "register" });
+//   }
+
+//   function handleLogout() {
+//     localStorage.removeItem("token");
+//     clearCart(); 
+//     setIsLoggedIn(false); // Force update
+//     setMobileMenuOpen(false);
+//     navigate("/");
+//   }
+
+//   // Close mobile menu on navigation
+//   function handleLinkClick() {
+//     setMobileMenuOpen(false);
+//   }
+
+//   // Navigate to profile on user icon click
+//   function handleProfileClick() {
+//     navigate("/profile");
+//   }
+
+//   return (
+//     <>
+//       <nav className="navbar" role="navigation" aria-label="Main navigation">
+//         <div className="navbar-container">
+//           {/* Logo */}
+//           <div className="navbar-logo">
+//             WIG<span>BYOPE</span>
+//           </div>
+
+//           {/* Desktop Links */}
+//           <ul className="navbar-links">
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           {/* Actions */}
+//           <div className="navbar-actions">
+//             {/* Cart Button */}
+//             <button onClick={onCartToggle} className="icon-btn cart-btn" aria-label="Cart">
+//               <i className="fas fa-shopping-bag" aria-hidden="true"></i>
+//               {cartItems.length > 0 && (
+//                 <span className="cart-badge" aria-live="polite">{cartItems.length}</span>
+//               )}
+//             </button>
+
+//             {/* User Auth / Profile */}
+//             {isLoggedIn ? (
+//               <button
+//                 className="icon-btn user-icon-btn"
+//                 aria-label="Go to profile"
+//                 onClick={handleProfileClick}
+//               >
+//                 <i className="fas fa-user-circle" aria-hidden="true"></i>
+//               </button>
+//             ) : (
+//               <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//             )}
+
+//             {/* Mobile Menu Toggle */}
+//             <button
+//               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+//               className="mobile-menu-btn"
+//               aria-label="Toggle mobile menu"
+//               aria-expanded={mobileMenuOpen}
+//             >
+//               <i className="fas fa-bars" aria-hidden="true"></i>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Mobile Menu */}
+//         <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} role="menu">
+//           <button
+//             className="close-btn"
+//             onClick={() => setMobileMenuOpen(false)}
+//             aria-label="Close menu"
+//           >
+//             &times;
+//           </button>
+//           <ul>
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           <div className="mobile-actions">
+//             {isLoggedIn ? (
+//               <>
+//                 <button className="btn-gradientt" onClick={handleProfileClick}>Profile</button>
+//                 <button className="btn-outline" onClick={handleLogout}>Logout</button>
+//               </>
+//             ) : (
+//               <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//             )}
+//           </div>
+//         </div>
+//       </nav>
+
+//       {/* Auth Modal */}
+//       <AuthModal
+//         isOpen={authModal.open}
+//         view={authModal.view}
+//         onClose={closeAuth}
+//         onLoginSuccess={() => {
+//           setIsLoggedIn(true);
+//           closeAuth();
+//         }}
+//       />
+//     </>
+//   );
+// }
+
+// export default Navbar;
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useContext, useEffect } from "react";
+// import { CartContext } from "../context/CartContext";
+// import { Link, useNavigate } from "react-router-dom";
+// import AuthModal from "./AuthModal";
+// import "./Navbar.css";
+
+// function Navbar({ onCartToggle }) {
+//   const { cartItems } = useContext(CartContext);
+//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [authModal, setAuthModal] = useState({ open: false, view: "register" });
+//   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+//   const navigate = useNavigate();
+//   const { clearCart } = useContext(CartContext);
+
+//   // Check login status on mount
+//   useEffect(() => {
+//     const token = localStorage.getItem("token");
+//     setIsLoggedIn(!!token);
+//   }, []);
+
+//   function openAuth(view) {
+//     setAuthModal({ open: true, view });
+//     setMobileMenuOpen(false);
+//   }
+
+//   function closeAuth() {
+//     setAuthModal({ open: false, view: "register" });
+//   }
+
+//   function handleLogout() {
+//     localStorage.removeItem("token");
+//     clearCart(); 
+//     setIsLoggedIn(false);
+//     setMobileMenuOpen(false);
+//     navigate("/");
+//   }
+
+//   // Close mobile menu on navigation
+//   function handleLinkClick() {
+//     setMobileMenuOpen(false);
+//   }
+
+//   // Navigate to profile on user icon click
+//   function handleProfileClick() {
+//     navigate("/profile");
+//   }
+
+//   return (
+//     <>
+//       <nav className="navbar" role="navigation" aria-label="Main navigation">
+//         <div className="navbar-container">
+//           {/* Logo */}
+//           <div className="navbar-logo">
+//             WIG<span>BYOPE</span>
+//           </div>
+
+//           {/* Desktop Links */}
+//           <ul className="navbar-links">
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           {/* Actions */}
+//           <div className="navbar-actions">
+//             {/* Cart Button */}
+//             <button onClick={onCartToggle} className="icon-btn cart-btn" aria-label="Cart">
+//               <i className="fas fa-shopping-bag" aria-hidden="true"></i>
+//               {cartItems.length > 0 && (
+//                 <span className="cart-badge" aria-live="polite">{cartItems.length}</span>
+//               )}
+//             </button>
+
+//             {/* User Auth / Profile */}
+//             {isLoggedIn ? (
+//               <button
+//                 className="icon-btn user-icon-btn"
+//                 aria-label="Go to profile"
+//                 onClick={handleProfileClick}
+//               >
+//                 <i className="fas fa-user-circle" aria-hidden="true"></i>
+//               </button>
+//             ) : (
+//               <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//             )}
+
+//             {/* Mobile Menu Toggle */}
+//             <button
+//               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+//               className="mobile-menu-btn"
+//               aria-label="Toggle mobile menu"
+//               aria-expanded={mobileMenuOpen}
+//             >
+//               <i className="fas fa-bars" aria-hidden="true"></i>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Mobile Menu */}
+//         <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} role="menu">
+//           <button
+//             className="close-btn"
+//             onClick={() => setMobileMenuOpen(false)}
+//             aria-label="Close menu"
+//           >
+//             &times;
+//           </button>
+//           <ul>
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           <div className="mobile-actions">
+//             {isLoggedIn ? (
+//               <>
+//                 <button className="btn-gradientt" onClick={handleProfileClick}>Profile</button>
+//                 <button className="btn-outline" onClick={handleLogout}>Logout</button>
+//               </>
+//             ) : (
+//               <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//             )}
+//           </div>
+//         </div>
+//       </nav>
+
+//       {/* Auth Modal */}
+//       <AuthModal
+//         isOpen={authModal.open}
+//         view={authModal.view}
+//         onClose={closeAuth}
+//         onLoginSuccess={() => {
+//           setIsLoggedIn(true);
+//           closeAuth();
+//         }}
+//       />
+//     </>
+//   );
+// }
+
+// export default Navbar;
+
+
+
+
+
+
+// import React, { useState, useContext, useEffect, useRef } from "react";
+// import { CartContext } from "../context/CartContext";
+// import { Link, useNavigate } from "react-router-dom";
+// import AuthModal from "./AuthModal";
+// import "./Navbar.css";
+
+// function Navbar({ onCartToggle }) {
+//   const { cartItems } = useContext(CartContext);
+//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [authModal, setAuthModal] = useState({ open: false, view: "register" });
+//   const [isLoggedIn, setIsLoggedIn] = useState(false);
+//   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+//   const navigate = useNavigate();
+//   const userMenuRef = useRef();
+//   const { clearCart } = useContext(CartContext);
+
+
+//   // Check login status on mount
+//   useEffect(() => {
+//     const token = localStorage.getItem("token");
+//     setIsLoggedIn(!!token);
+//   }, []);
+
+//   // Close user menu if clicked outside
+//   useEffect(() => {
+//     function handleClickOutside(event) {
+//       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+//         setUserMenuOpen(false);
+//       }
+//     }
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, []);
+
+//   function openAuth(view) {
+//     setAuthModal({ open: true, view });
+//     setMobileMenuOpen(false);
+//     setUserMenuOpen(false);
+//   }
+
+//   function closeAuth() {
+//     setAuthModal({ open: false, view: "register" });
+//   }
+
+//   function handleLogout() {
+//     localStorage.removeItem("token");
+//     clearCart(); 
+//     setIsLoggedIn(false);
+//     setMobileMenuOpen(false);
+//     setUserMenuOpen(false);
+//     navigate("/");
+//   }
+
+//   // Close mobile menu on navigation
+//   function handleLinkClick() {
+//     setMobileMenuOpen(false);
+//   }
+
+//   return (
+//     <>
+//       <nav className="navbar" role="navigation" aria-label="Main navigation">
+//         <div className="navbar-container">
+//           {/* Logo */}
+//           <div className="navbar-logo">
+//             WIG<span>BYOPE</span>
+//           </div>
+
+//           {/* Desktop Links */}
+//           <ul className="navbar-links">
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             {/* <li><Link to="/blog" onClick={handleLinkClick}>Blog</Link></li> */}
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           {/* Actions */}
+//           <div className="navbar-actions">
+//             {/* Cart Button */}
+//             <button onClick={onCartToggle} className="icon-btn cart-btn" aria-label="Cart">
+//               <i className="fas fa-shopping-bag" aria-hidden="true"></i>
+//               {cartItems.length > 0 && (
+//                 <span className="cart-badge" aria-live="polite">{cartItems.length}</span>
+//               )}
+//             </button>
+
+//             {/* User Auth / Profile */}
+//             {isLoggedIn ? (
+//               <div className="user-menu-container" ref={userMenuRef}>
+//                 <button
+//                   className="icon-btn user-icon-btn"
+//                   aria-label="User  menu"
+//                   aria-haspopup="true"
+//                   aria-expanded={userMenuOpen}
+//                   onClick={() => setUserMenuOpen((open) => !open)}
+//                 >
+//                   <i className="fas fa-user-circle" aria-hidden="true"></i>
+//                 </button>
+//                 {userMenuOpen && (
+//                   <ul className="user-dropdown" role="menu">
+//                     <li role="none">
+//                       <button role="menuitem" onClick={handleLogout} className="dropdown-logout-btn">
+//                         Logout
+//                       </button>
+//                     </li>
+//                   </ul>
+//                 )}
+//               </div>
+//             ) : (
+//               <>
+//                 {/* <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button> */}
+//                 <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//               </>
+//             )}
+
+//             {/* Mobile Menu Toggle */}
+//             <button
+//               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+//               className="mobile-menu-btn"
+//               aria-label="Toggle mobile menu"
+//               aria-expanded={mobileMenuOpen}
+//             >
+//               <i className="fas fa-bars" aria-hidden="true"></i>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Mobile Menu */}
+//         <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`} role="menu">
+//           <button
+//             className="close-btn"
+//             onClick={() => setMobileMenuOpen(false)}
+//             aria-label="Close menu"
+//           >
+//             &times;
+//           </button>
+//           <ul>
+//             <li><Link to="/" onClick={handleLinkClick}>Home</Link></li>
+//             <li><Link to="/shop" onClick={handleLinkClick}>Shop</Link></li>
+//             <li><Link to="/training" onClick={handleLinkClick}>Training</Link></li>
+//             <li><Link to="/about" onClick={handleLinkClick}>About</Link></li>
+//             {/* <li><Link to="/blog" onClick={handleLinkClick}>Blog</Link></li> */}
+//             <li><Link to="/contact" onClick={handleLinkClick}>Contact</Link></li>
+//           </ul>
+
+//           <div className="mobile-actions">
+//             {isLoggedIn ? (
+//               <>
+//                 <button className="btn-gradientt" onClick={handleLogout}>Logout</button>
+//               </>
+//             ) : (
+//               <>
+//                 {/* <button className="btn-outline" onClick={() => openAuth("login")}>Sign In</button> */}
+//                 <button className="btn-gradientt" onClick={() => openAuth("register")}>Sign Up</button>
+//               </>
+//             )}
+//           </div>
+//         </div>
+//       </nav>
+
+//       {/* Auth Modal */}
+//       <AuthModal
+//         isOpen={authModal.open}
+//         view={authModal.view}
+//         onClose={closeAuth}
+//         onLoginSuccess={() => {
+//           setIsLoggedIn(true);
+//           closeAuth();
+//         }}
+//       />
+//     </>
+//   );
+// }
+
+// export default Navbar;
+
+
+
+
+
+
+
+
 
 // import React, { useState, useContext } from "react";
 // import { CartContext } from "../context/CartContext";

@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
+import EnrollModal from "./EnrollModal"; // Adjust path if needed
 import './Training.css';
 
 function Training() {
+  const [isEnrollOpen, setIsEnrollOpen] = useState(false);
+
+  const openEnrollModal = () => setIsEnrollOpen(true);
+  const closeEnrollModal = () => setIsEnrollOpen(false);
+
   return (
     <section className="training-page max-w-5xl mx-auto p-6 md:p-12 font-sans text-gray-800">
       {/* Hero Banner */}
@@ -13,8 +19,8 @@ function Training() {
           Unlock your creativity and elevate your skills with our comprehensive training programs designed for all levels.
         </p>
         <button
-          className="bg-pink-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-pink-700 transition"
-          onClick={() => window.location.href = "/enroll"}
+          className="enroll-btn"
+          onClick={openEnrollModal}
           aria-label="Enroll Now"
         >
           Enroll Now
@@ -90,8 +96,8 @@ function Training() {
       <section className="call-to-action text-center mb-12">
         <h2 className="text-3xl font-semibold text-pink-600 mb-4">Ready to Elevate Your Wig & Braid Skills?</h2>
         <button
-          className="bg-pink-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-pink-700 transition"
-          onClick={() => window.location.href = "/enroll"}
+          className="enroll-btn"
+          onClick={openEnrollModal}
           aria-label="Enroll Now"
         >
           Enroll Now
@@ -102,6 +108,9 @@ function Training() {
       <footer className="contact-info text-center text-gray-600">
         <p>Have questions? <a href="/contact" className="text-pink-600 hover:underline">Contact Us</a> for personalized guidance.</p>
       </footer>
+
+      {/* Enrollment Modal */}
+      <EnrollModal isOpen={isEnrollOpen} onClose={closeEnrollModal} />
     </section>
   );
 }

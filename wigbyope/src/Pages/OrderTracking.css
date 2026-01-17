@@ -1,0 +1,176 @@
+/* OrderTracking.css - Enhanced and Accessible */
+
+.order-tracking-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+.order-tracking-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.order-tracking-container p {
+  margin: 10px 0;
+  font-size: 1rem;
+}
+
+.status-progress {
+  display: flex;
+  justify-content: space-between;
+  margin: 30px 0;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.status-step {
+  text-align: center;
+  flex: 1;
+  position: relative;
+}
+
+.status-step:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ccc;
+}
+
+.status-step.completed .status-icon {
+  color: #28a745;
+}
+
+.status-step.active .status-icon {
+  color: #007bff;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.tracking-details, .tracking-shipping {
+  background: white;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tracking-details h2, .tracking-shipping h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.tracking-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.action-button {
+  display: inline-block;
+  padding: 12px 20px;
+  text-decoration: none;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+  margin: 5px;
+  transition: background 0.3s;
+}
+
+.action-button.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.action-button.secondary:hover {
+  background: #5a6268;
+}
+
+.loading-container, .error-container {
+  text-align: center;
+  padding: 50px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 500px;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-icon {
+  font-size: 3rem;
+  color: #dc3545;
+}
+
+.error-title {
+  color: #dc3545;
+  font-size: 1.5rem;
+}
+
+.error-actions {
+  margin-top: 20px;
+}
+
+.retry-button, .error-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 5px;
+  transition: background 0.3s;
+}
+
+.retry-button:hover, .error-button:hover {
+  background: #c82333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .order-tracking-container {
+    padding: 10px;
+  }
+
+  .status-progress {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .status-step:not(:last-child)::after {
+    content: '↓';
+    right: 50%;
+    top: 100%;
+    transform: translateX(50%);
+  }
+
+  .tracking-actions {
+    display: flex;
+    flex-direction: column;
+  }
+}

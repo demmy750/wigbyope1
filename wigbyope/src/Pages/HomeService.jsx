@@ -7,19 +7,19 @@ const services = [
     title: 'Custom Wig Design',
     description:
       'Expertly crafted wigs tailored to your unique style, face shape, and preferences for a flawless, natural look.',
-    icon: <Scissors size={48} color="#9c27b0" aria-hidden="true" />,
+    icon: <Scissors size={48} color="#d63384" aria-hidden="true" />,
   },
   {
     title: 'Styling Training',
     description:
       'Professional, hands-on guidance to master wig styling techniques and boost your confidence every day.',
-    icon: <GraduationCap size={48} color="#9c27b0" aria-hidden="true" />,
+    icon: <GraduationCap size={48} color="#d63384" aria-hidden="true" />,
   },
   {
     title: 'Maintenance Service',
     description:
       'Comprehensive care and upkeep to keep your wig looking fresh, vibrant, and long-lasting.',
-    icon: <Sparkles size={48} color="#9c27b0" aria-hidden="true" />,
+    icon: <Sparkles size={48} color="#d63384" aria-hidden="true" />,
   },
 ];
 

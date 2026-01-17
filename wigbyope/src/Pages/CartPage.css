@@ -141,7 +141,7 @@
 
 /* Cart summary */
 .cart-summary {
-  margin-top: 1.5rem;
+  /* margin-top: 1.5rem; */
   text-align: right;
   border-top: 1px solid #ddd;
   padding-top: 1rem;

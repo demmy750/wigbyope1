@@ -1,0 +1,101 @@
+.enroll-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.enroll-modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 480px;
+  padding: 24px 32px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-family: Arial, sans-serif;
+}
+
+.enroll-modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.enroll-modal-close-btn:hover,
+.enroll-modal-close-btn:focus {
+  color: #e91e63; /* pink */
+  outline: none;
+}
+
+.enroll-modal-title {
+  color: #e91e63;
+  font-size: 24px;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.enroll-modal-description {
+  color: #444;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.enroll-modal-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.enroll-modal-label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.enroll-modal-input,
+.enroll-modal-select {
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.enroll-modal-input:focus,
+.enroll-modal-select:focus {
+  border-color: #e91e63;
+  outline: none;
+}
+
+.enroll-modal-submit-btn {
+  background-color: #e91e63;
+  color: white;
+  padding: 12px 0;
+  border: none;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.enroll-modal-submit-btn:hover,
+.enroll-modal-submit-btn:focus {
+  background-color: #c2185b;
+  outline: none;
+}
