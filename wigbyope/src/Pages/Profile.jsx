@@ -72,9 +72,9 @@ export default function ProfilePage() {
     <div className="profile-page">
       {/* Header with Conditional Profile Icon */}
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", background: "#f0f0f0", marginBottom: "2rem" }}>
-        <Link to="/" style={{ textDecoration: "none", fontSize: "1.5rem", fontWeight: "bold" }}>
+        {/* <Link to="/" style={{ textDecoration: "none", fontSize: "1.5rem", fontWeight: "bold" }}>
           Your App Name
-        </Link>
+        </Link> */}
         <nav style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
           {/* Conditional: Profile icon if logged in */}
           {isLoggedIn && (
