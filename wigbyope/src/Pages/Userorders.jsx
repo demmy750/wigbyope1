@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchWithAuth } from "../api";
-import "./UserOrders.css";
+import "./Userders.css";
 
 const UserOrders = () => {
   const [orders, setOrders] = useState([]);
