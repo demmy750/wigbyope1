@@ -2522,7 +2522,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchWithAuth } from "../api";
 import { cartAPI } from "../api";
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import AuthModal from "../components/AuthModal"; // Adjust path if necessary (assuming AuthModal is in ../components/)
+import AuthModal from '../Components/AuthModal';  
 // import { isValidPhoneNumber } from 'libphonenumber-js'; 
 import "./CheckoutPage.css";
 
